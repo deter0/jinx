@@ -1,23 +1,49 @@
 #pragma once
 #include <stdlib.h>
 #include <stdbool.h>
+#include <cairo/cairo.h>
 
 #define MAX_COMPONENTS 128
-
-typedef struct JIDComponent {
-    const char *ComponentName;
-} JIDComponent;
 
 /* Jinx Widget */
 typedef struct JID {
     const char *JIDType;
-    JIDComponent *Components[MAX_COMPONENTS];
+    struct JIDComponent *Components[MAX_COMPONENTS];
     size_t ComponentCount;
 
     struct JID **Children;
     size_t ChildrenCount;
     size_t ChildrenAlloc;
+
+    struct JID *Parent;
 } JID;
+
+#define ExtendJIDComponent const char *ComponentName; \
+                               bool isRenderable;
+
+typedef struct JIDComponent {
+    ExtendJIDComponent;
+} JIDComponent;
+
+#define ExtendJIDRenderableComp ExtendJIDComponent;\
+                            void(*render)(JID *jid, cairo_t *ctx);
+// Extends `JIDComponent`
+typedef struct ComponentRenderable {
+    ExtendJIDRenderableComp;
+} ComponentRenderable;
+
+// Extends `JIDComponentRenderable`
+typedef struct ComponentRectangleRenderer {
+    ExtendJIDRenderableComp;
+    float BorderRadius;
+} ComponentRectangleRenderer;
+ComponentRectangleRenderer *componentRectangleRenderer(void);
+
+typedef struct ComponentRenderDamage {
+    const char *ComponentName;
+    bool IsDamaged;
+} ComponentRenderDamage;
+ComponentRenderDamage componentRenderDamage(void);
 
 /**
  * Add component to a jid
@@ -41,6 +67,7 @@ bool JIDTypeEq(JID *jid, const char *expect);
 */
 int JIDFindComp(JID *jid, const char *compName);
 
+// Extends `JIDComponent`
 typedef struct ComponentTransform {
     const char *ComponentName;
     float x;
@@ -48,7 +75,26 @@ typedef struct ComponentTransform {
     float width;
     float height;
 } ComponentTransform;
-ComponentTransform componentTransform(float x, float y, float w, float h);
+ComponentTransform *componentTransform(float x, float y, float w, float h);
+
+typedef struct RGBA {
+    float r;
+    float g;
+    float b;
+    float a;
+} RGBA;
+
+// Extends `JIDComponent`
+typedef struct ComponentColor {
+    ExtendJIDComponent;
+    RGBA *foreground;
+    RGBA *background;
+} ComponentColor;
+ComponentColor componentColorFG(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+ComponentColor *componentColorBG(float r, float g, float b, float a);
+ComponentColor componentColorFGBG(
+    unsigned char fr, unsigned char fg, unsigned char fb, unsigned char fa,
+    unsigned char br, unsigned char bg, unsigned char bb, unsigned char ba);
 
 // Root Component
 JID JIDRoot(float width, float height);
