@@ -9,6 +9,7 @@ typedef struct EventHandler {
     void (*keyPress)(struct EventHandler *eh, unsigned int keyCode);
     void (*render)(struct EventHandler *eh);
     void (*quit)(struct EventHandler *eh);
+    void (*update)(struct EventHandler *eh, double dt);
 } EventHandler;
 
 void voidFn(void);

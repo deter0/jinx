@@ -52,6 +52,7 @@ X11Window createWindow(unsigned int width, unsigned int height) {
 		width, height,
 		1, BlackPixel(display, screen),
 		BlackPixel(display, screen));
+	XWindowAttributes attr = {0};
 	X11Window xWindow = {
 		.window = win,
 		.display = display,
@@ -65,7 +66,8 @@ X11Window createWindow(unsigned int width, unsigned int height) {
 				.x = 0,
 				.y = 0
 			}
-		}
+		},
+		.attributes = &attr
 	};
 	Atom deleteWindow = XInternAtom(display, "WM_DELETE_WINDOW", false);
 	XSetWMProtocols(display, win, &deleteWindow, 1);
@@ -83,6 +85,7 @@ X11Window createWindow(unsigned int width, unsigned int height) {
 	XMoveWindow(display, win,
 		xWindow.dim.position.x,
 		xWindow.dim.position.y);
+	XGetWindowAttributes(display, win, xWindow.attributes);
 	
 	return xWindow;
 }

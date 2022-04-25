@@ -20,6 +20,25 @@ static void *scalloc(size_t s) {
     return res;
 }
 
+static JIDComponent *getComponentHard(JID *jid, const char *target, const char *from) {
+    int index = JIDFindComp(jid, target);
+    if (index == -1) {
+        fprintf(stderr, "Component: `%s` requires component: `%s`\n", from,
+            target);
+        exit(1);
+    }
+    return jid->Components[index];
+}
+static JIDComponent *getComponentSoft(JID *jid, const char *target, const char *from) {
+    int index = JIDFindComp(jid, target);
+    if (index == -1) {
+        fprintf(stderr, "Component `%s` recommends component: `%s`\n", from,
+            target);
+        return NULL;
+    }
+    return jid->Components[index];
+}
+
 // Components
 
 ComponentTransform *componentTransform(float x, float y, float w, float h) {
@@ -38,27 +57,42 @@ bool JIDTypeEq(JID *jid, const char *expect) {
     return !strcmp(jid->JIDType, expect);
 }
 
-JID JIDRoot(float width, float height) {
-    JID root = {
-        .JIDType ="Root",
+JID *JIDRoot(float width, float height) {
+    JID *root = scalloc(sizeof(JID));
 
-        .Children = NULL,
-        .ChildrenCount = 0,
-        .ChildrenAlloc = 0,
+    root->JIDType ="Root";
+    root->Children = NULL;
+    root->ChildrenCount = 0;
+    root->ChildrenAlloc = 0;
+    root->ComponentCount = 0;
 
-        .Components = {NULL},
-        .ComponentCount = 0,
-    };
     ComponentTransform *transform = componentTransform(0, 0, width, height);
-    assert(JIDAddComp(&root, (JIDComponent*)transform) != 1);
+    assert(JIDAddComp(root, (JIDComponent*)transform) != 1);
     ComponentColor *color = componentColorBG(1.0, 1.0, 1.0, 1.0);
-    assert(JIDAddComp(&root, (JIDComponent*)color) != 1);
+    assert(JIDAddComp(root, (JIDComponent*)color) != 1);
     ComponentRectangleRenderer *rectangleRenderer = componentRectangleRenderer();
-    assert(JIDAddComp(&root, (JIDComponent*)rectangleRenderer) != 1);
-    // ComponentRenderDamage damage = componentRenderDamage();
-    // assert(JIDAddComp(&root, (JIDComponent*)&damage) != 1);
+    assert(JIDAddComp(root, (JIDComponent*)rectangleRenderer) != 1);
 
     return root;
+}
+
+JID *JIDRectangle(float x, float y, float width, float height) {
+    JID *rect = scalloc(sizeof(JID));
+
+    rect->JIDType ="Rectangle";
+    rect->Children = NULL;
+    rect->ChildrenCount = 0;
+    rect->ChildrenAlloc = 0;
+    rect->ComponentCount = 0;
+
+    ComponentTransform *transform = componentTransform(x, y, width, height);
+    assert(JIDAddComp(rect, (JIDComponent*)transform) != 1);
+    ComponentColor *color = componentColorBG(1.0, 1.0, 1.0, 1.0);
+    assert(JIDAddComp(rect, (JIDComponent*)color) != 1);
+    ComponentRectangleRenderer *rectangleRenderer = componentRectangleRenderer();
+    assert(JIDAddComp(rect, (JIDComponent*)rectangleRenderer) != 1);
+
+    return rect;
 }
 
 int JIDAddComp(JID *jid, JIDComponent *comp) {
@@ -89,54 +123,21 @@ int JIDFindComp(JID *jid, const char *compName) {
     return -1;
 }
 
-// ComponentColor componentColorFG(unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
-//     return (ComponentColor){
-//         .foreground = (RGBA){
-//             .r = r,
-//             .g = g,
-//             .b = b,
-//             .a = a
-//         },
-//         .background = (RGBA){
-//             .r = 0,
-//             .g = 0,
-//             .b = 0,
-//             .a = 0
-//         }
-//     };
-// }
 ComponentColor *componentColorBG(float r, float g, float b, float a) {
     ComponentColor *color = scalloc(sizeof(ComponentColor));
     color->ComponentName = "ComponentColor";
+    color->background = (RGBA*)scalloc(sizeof(RGBA));
+    color->background->r = r;
+    color->background->g = g;
+    color->background->b = b;
+    color->background->a = a;
     color->foreground = (RGBA*)scalloc(sizeof(RGBA));
     color->foreground->r = 0.0;
     color->foreground->g = 0.0;
     color->foreground->b = 0.0;
     color->foreground->a = 0.0;
-    color->background = (RGBA*)scalloc(sizeof(RGBA));
-    color->foreground->r = r;
-    color->foreground->g = g;
-    color->foreground->b = b;
-    color->foreground->a = a;
     return color;
 }
-// ComponentColor componentColorFGBG(unsigned char fr, unsigned char fg, unsigned char fb, unsigned char fa,
-//                                     unsigned char br, unsigned char bg, unsigned char bb, unsigned char ba) {
-//     return (ComponentColor){
-//         .foreground = (RGBA){
-//             .r = fr,
-//             .g = fg,
-//             .b = fb,
-//             .a = fa
-//         },
-//         .background = (RGBA){
-//             .r = br,
-//             .g = bg,
-//             .b = bb,
-//             .a = ba
-//         }
-//     };
-// }
 
 ComponentRectangleRenderer *componentRectangleRenderer(void) {
     ComponentRectangleRenderer *renderer = scalloc(sizeof(ComponentRectangleRenderer));
@@ -151,4 +152,22 @@ ComponentRenderDamage componentRenderDamage(void) {
         .ComponentName = "ComponentRenderDamage",
         .IsDamaged = true
     };
+}
+
+int JIDSetParent(JID *jid, JID *parent) {
+    if (parent == NULL) {
+        fprintf(stderr, "Attempt to call `JIDSetParent` with NULL parent\n");
+        return 1;
+    }
+    if (jid == NULL) {
+        fprintf(stderr, "Attempt to call `JIDSetParent` with NULL jid\n");
+        return 1;
+    }
+    if (parent->ChildrenCount + 1 > parent->ChildrenAlloc) {
+        parent->ChildrenAlloc += 128;
+        parent->Children = realloc(parent->Children, sizeof(JID*) * parent->ChildrenAlloc); // !
+    }
+    parent->Children[parent->ChildrenCount++] = jid;
+    jid->Parent = parent;
+    return 0;
 }

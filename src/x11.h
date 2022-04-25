@@ -23,6 +23,7 @@ typedef struct X11Window {
 	Window window;
 	int screen;
 	dimensions dim;
+	XWindowAttributes *attributes;
 } X11Window;
 
 X11Window createWindow(unsigned int width, unsigned int height);

@@ -67,6 +67,8 @@ bool JIDTypeEq(JID *jid, const char *expect);
 */
 int JIDFindComp(JID *jid, const char *compName);
 
+int JIDSetParent(JID *jid, JID *parent);
+
 // Extends `JIDComponent`
 typedef struct ComponentTransform {
     const char *ComponentName;
@@ -96,5 +98,9 @@ ComponentColor componentColorFGBG(
     unsigned char fr, unsigned char fg, unsigned char fb, unsigned char fa,
     unsigned char br, unsigned char bg, unsigned char bb, unsigned char ba);
 
+static JIDComponent *getComponentHard(JID *jid, const char *target, const char *from);
+static JIDComponent *getComponentSoft(JID *jid, const char *target, const char *from);
+
 // Root Component
-JID JIDRoot(float width, float height);
+JID *JIDRoot(float width, float height);
+JID *JIDRectangle(float x, float y, float width, float height);

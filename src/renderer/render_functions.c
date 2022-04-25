@@ -6,25 +6,6 @@
 
 #include <stdio.h>
 
-static JIDComponent *getComponentHard(JID *jid, const char *target, const char *src) {
-    int index = JIDFindComp(jid, target);
-    if (index == -1) {
-        fprintf(stderr, "Component: `%s` requires component: `%s`\n", src,
-            target);
-        exit(1);
-    }
-    return jid->Components[index];
-}
-static JIDComponent *getComponentSoft(JID *jid, const char *target, const char *src) {
-    int index = JIDFindComp(jid, target);
-    if (index == -1) {
-        fprintf(stderr, "Component `%s` recommends component: `%s`\n", src,
-            target);
-        return NULL;
-    }
-    return jid->Components[index];
-}
-
 void renderRectangleRenderer(JID *jid, cairo_t *ctx) {
     ComponentTransform *transform = (ComponentTransform*)getComponentHard(
                                             jid,
@@ -43,7 +24,7 @@ void renderRectangleRenderer(JID *jid, cairo_t *ctx) {
             color->background->g,
             color->background->b,
             color->background->a);
-        printf("COLOR: %f, %f, %f\n", color->background->r, color->background->g, color->background->b);
+        // printf("COLOR: %f, %f, %f\n", color->background->r, color->background->g, color->background->b);
     } else {
         cairo_set_source_rgba(ctx, 1.0, 1.0, 1.0, 1.0);
     }

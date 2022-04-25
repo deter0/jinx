@@ -15,4 +15,7 @@ void renderRoot(JID *rootJID, cairo_t *ctx) {
             }
         }
     }
+    for (size_t i = 0; i < rootJID->ChildrenCount; i++) {
+        renderRoot(rootJID->Children[i], ctx);
+    }
 }

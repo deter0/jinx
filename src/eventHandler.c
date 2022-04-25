@@ -1,6 +1,8 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 #include "x11.h"
 #include "eventHandler.h"
@@ -8,6 +10,7 @@
 static void defaultQuit(EventHandler *eh) { (void)eh; }
 static void defaultKeyPress(EventHandler *eh, unsigned int keyCode) { (void)eh; (void)keyCode; }
 static void defaultRender(EventHandler *eh) { (void)eh; }
+static void defaultUpdate(EventHandler *eh, double dt) { (void)eh; (void)dt; }
 
 // Put stuff like cairo_t inside userData
 EventHandler eventHandler(X11Window *xWindow, void *userData) {
@@ -17,6 +20,7 @@ EventHandler eventHandler(X11Window *xWindow, void *userData) {
         .keyPress = defaultKeyPress,
         .quit = defaultQuit,
         .render = defaultRender,
+        .update = defaultUpdate
     };
 }
 
@@ -28,25 +32,38 @@ void eventHandlerStart(EventHandler *eh) {
 
         int running = 1;
         XEvent event;
+        struct timeval curr, last;
+        gettimeofday(&last, NULL);
         while (running) {
-            XNextEvent(window.display, &event);
+            gettimeofday(&curr, NULL);
+            double deltaUsec = (curr.tv_usec - last.tv_usec) / (double)1000;
+            gettimeofday(&last, NULL);
+            eh->update(eh, deltaUsec);
+            if (XPending(window.display)) {
+                XNextEvent(window.display, &event);
 
-            switch (event.type) {
-                case Expose:
-                    eh->render(eh);
-                    break;
-                case ButtonPress:
-                    break;
-                case KeyPress:
-                    eh->keyPress(eh, event.xkey.keycode);
-                    break;
-                case ClientMessage:
-                    if ((Atom)(event.xclient.data.l[0]) == deleteWindow) {
-                        running = false;
-                    }
-                    break;
-                default:
-                    break;
+                switch (event.type) {
+                    case Expose:
+                        XGetWindowAttributes(window.display,
+                            window.window,
+                            window.attributes);
+                        eh->render(eh);
+                        break;
+                    case ButtonPress:
+                        break;
+                    case KeyPress:
+                        eh->keyPress(eh, event.xkey.keycode);
+                        break;
+                    case ClientMessage:
+                        if ((Atom)(event.xclient.data.l[0]) == deleteWindow) {
+                            running = false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                usleep(750);
             }
         }
         eh->quit(eh);
