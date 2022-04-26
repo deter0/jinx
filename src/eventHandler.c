@@ -39,8 +39,8 @@ void eventHandlerStart(EventHandler *eh) {
             double deltaUsec = (curr.tv_usec - last.tv_usec) / (double)1000;
             gettimeofday(&last, NULL);
             eh->update(eh, deltaUsec);
-            if (XPending(window.display)) {
-                XNextEvent(window.display, &event);
+            XNextEvent(window.display, &event);
+            // if (XPending(window.display)) {
 
                 switch (event.type) {
                     case Expose:
@@ -62,9 +62,9 @@ void eventHandlerStart(EventHandler *eh) {
                     default:
                         break;
                 }
-            } else {
-                usleep(750);
-            }
+            // } else {
+            //     usleep(16000);
+            // }
         }
         eh->quit(eh);
     } else {

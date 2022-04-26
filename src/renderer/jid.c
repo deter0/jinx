@@ -51,6 +51,16 @@ ComponentTransform *componentTransform(float x, float y, float w, float h) {
     return transform;
 }
 
+ComponentTextRenderer *componentTextRenderer(void) {
+    ComponentTextRenderer *rndr = (ComponentTextRenderer*)scalloc(sizeof(ComponentTextRenderer));
+    rndr->ComponentName = "ComponentTextRenderer";
+    rndr->FontSize = 24;
+    rndr->Text = "";
+    rndr->render = renderTextRenderer;
+    rndr->isRenderable = true;
+    return rndr;
+}
+
 ////
 
 bool JIDTypeEq(JID *jid, const char *expect) {
@@ -68,7 +78,7 @@ JID *JIDRoot(float width, float height) {
 
     ComponentTransform *transform = componentTransform(0, 0, width, height);
     assert(JIDAddComp(root, (JIDComponent*)transform) != 1);
-    ComponentColor *color = componentColorBG(1.0, 1.0, 1.0, 1.0);
+    ComponentColor *color = componentColorBG(1.0, 1.0, 1.0, 0.0);
     assert(JIDAddComp(root, (JIDComponent*)color) != 1);
     ComponentRectangleRenderer *rectangleRenderer = componentRectangleRenderer();
     assert(JIDAddComp(root, (JIDComponent*)rectangleRenderer) != 1);
@@ -91,6 +101,28 @@ JID *JIDRectangle(float x, float y, float width, float height) {
     assert(JIDAddComp(rect, (JIDComponent*)color) != 1);
     ComponentRectangleRenderer *rectangleRenderer = componentRectangleRenderer();
     assert(JIDAddComp(rect, (JIDComponent*)rectangleRenderer) != 1);
+
+    return rect;
+}
+
+JID *JIDText(float x, float y, char *text) {
+    JID *rect = scalloc(sizeof(JID));
+
+    rect->JIDType ="Text";
+    rect->Children = NULL;
+    rect->ChildrenCount = 0;
+    rect->ChildrenAlloc = 0;
+    rect->ComponentCount = 0;
+
+    const int fontSize = 24;
+    ComponentTransform *transform = componentTransform(x, y, strlen(text) * fontSize, fontSize);
+    assert(JIDAddComp(rect, (JIDComponent*)transform) != 1);
+    ComponentColor *color = componentColorFG(1.0, 1.0, 1.0, 1.0);
+    assert(JIDAddComp(rect, (JIDComponent*)color) != 1);
+    ComponentTextRenderer *textRenderer = componentTextRenderer();
+    textRenderer->Text = text;
+    textRenderer->FontSize = fontSize;
+    assert(JIDAddComp(rect, (JIDComponent*)textRenderer) != 1);
 
     return rect;
 }
@@ -138,6 +170,22 @@ ComponentColor *componentColorBG(float r, float g, float b, float a) {
     color->foreground->a = 0.0;
     return color;
 }
+ComponentColor *componentColorFG(float r, float g, float b, float a) {
+    ComponentColor *color = scalloc(sizeof(ComponentColor));
+    color->ComponentName = "ComponentColor";
+    color->background = (RGBA*)scalloc(sizeof(RGBA));
+    color->background->r = 0.0;
+    color->background->g = 0.0;
+    color->background->b = 0.0;
+    color->background->a = 0.0;
+    color->foreground = (RGBA*)scalloc(sizeof(RGBA));
+    color->foreground->r = r;
+    color->foreground->g = g;
+    color->foreground->b = b;
+    color->foreground->a = a;
+    return color;
+}
+
 
 ComponentRectangleRenderer *componentRectangleRenderer(void) {
     ComponentRectangleRenderer *renderer = scalloc(sizeof(ComponentRectangleRenderer));

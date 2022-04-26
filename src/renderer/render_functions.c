@@ -32,3 +32,36 @@ void renderRectangleRenderer(JID *jid, cairo_t *ctx) {
     cairo_fill(ctx);
     cairo_restore(ctx);
 }
+
+
+void renderTextRenderer(JID *jid, cairo_t *ctx) {
+    ComponentTransform *transform = (ComponentTransform*)getComponentHard(
+                                            jid,
+                                            "ComponentTransform",
+                                            "ComponentTextRenderer");
+    ComponentColor *color = (ComponentColor*)getComponentSoft(
+                                            jid,
+                                            "ComponentColor",
+                                            "ComponentTextRenderer");
+    ComponentTextRenderer *tren = (ComponentTextRenderer*)getComponentHard(
+                                            jid,
+                                            "ComponentTextRenderer",
+                                            "ComponentTextRenderer");
+    cairo_save(ctx);
+    if (color != NULL) {
+        cairo_set_source_rgba(ctx,
+            1.0,
+            1.0,
+            1.0,
+            1.0);
+    } else {
+        cairo_set_source_rgba(ctx, 0.0, 0.0, 0.0, 1.0);
+    }
+    cairo_set_font_size(ctx, (double)tren->FontSize);
+    cairo_move_to(ctx, transform->x, transform->y + tren->FontSize);
+    cairo_select_font_face(ctx, "Iosevka",
+      CAIRO_FONT_SLANT_NORMAL,
+      CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_show_text(ctx, tren->Text);
+    cairo_restore(ctx);
+}

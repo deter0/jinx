@@ -39,6 +39,15 @@ typedef struct ComponentRectangleRenderer {
 } ComponentRectangleRenderer;
 ComponentRectangleRenderer *componentRectangleRenderer(void);
 
+// Extends `JIDComponentRenderable`
+typedef struct ComponentTextRenderer {
+    ExtendJIDRenderableComp;
+    int FontSize;
+    char *Text;
+} ComponentTextRenderer;
+ComponentTextRenderer *componentTextRenderer(void);
+
+
 typedef struct ComponentRenderDamage {
     const char *ComponentName;
     bool IsDamaged;
@@ -92,7 +101,7 @@ typedef struct ComponentColor {
     RGBA *foreground;
     RGBA *background;
 } ComponentColor;
-ComponentColor componentColorFG(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+ComponentColor *componentColorFG(float r, float g, float b, float a);
 ComponentColor *componentColorBG(float r, float g, float b, float a);
 ComponentColor componentColorFGBG(
     unsigned char fr, unsigned char fg, unsigned char fb, unsigned char fa,
