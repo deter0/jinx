@@ -5,17 +5,9 @@
 #include <cairo/cairo-xlib.h>
 #include <math.h>
 
-#include "x11.h"
-#include "eventHandler.h"
-
-#include "x11.c"
-#include "eventHandler.c"
-
-#include "core/renderer.h"
-#include "core/jid.h"
-
-#include "core/jid.c"
-#include "core/renderer.c"
+#include "jinx/jinx.h"
+#include "jinx/jinx.c"
+#include "src/jinx/core/helpers.h"
 
 #define X11
 
@@ -53,14 +45,14 @@ int main(void) {
     exit(1);
 #endif
     root = JIDRoot(800, 800); 
-    JID *txt = JIDText(0, 0, "Hello");
-    ComponentTextRenderer *rnd = (ComponentTextRenderer*)getComponentHard(txt, "ComponentTextRenderer", NULL);
-    ComponentColor *color = (ComponentColor*)getComponentHard(txt, "ComponentColor", NULL);
-    color->background->r = 255;
-    color->background->g = 0;
-    color->background->b = 0;
-    color->background->a = 1;
-    rnd->Text = "Hi";
+    JID *txt = JIDText(0, 0, "Click the button:");
+    assert(JIDSetText(txt, "Click the button please!") != 1);
+    assert(JIDSetFGColor(txt, (RGBA){
+        .r = 255 / 255.0,
+        .g = 255 / 255.0,
+        .b = 25 / 255.0,
+        .a = 1
+    }) != 1);
     JIDSetParent(txt, root);
 
     X11Window window = createWindow(800, 800);
