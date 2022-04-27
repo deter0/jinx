@@ -2,7 +2,7 @@
 
 #include "jid.h"
 #include "renderer.h"
-#include "render_functions.c"
+#include "renderFunctions.c"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -218,4 +218,54 @@ int JIDSetParent(JID *jid, JID *parent) {
     parent->Children[parent->ChildrenCount++] = jid;
     jid->Parent = parent;
     return 0;
+}
+
+bool ComponentNameEq(JIDComponent *comp, const char *expect) {
+    return !strcmp(comp->ComponentName, expect);
+}
+
+// Deleting
+
+void ComponentColorFree(ComponentColor *color) {
+    assert(ComponentNameEq((JIDComponent*)color, "ComponentColor"));
+
+    free(color->foreground);
+    free(color->background);
+    // free((char*)color->ComponentName);
+    free(color);
+}
+
+void ComponentTextRendererFree(ComponentTextRenderer *tr) {
+    assert(ComponentNameEq((JIDComponent*)tr, "ComponentTextRenderer"));
+    // free(tr->Text);
+    // free((char*)tr->ComponentName);
+    free(tr);
+}
+
+void JIDDestroy(JID *jid) {
+    if (jid == NULL) {
+        fprintf(stderr, "Attempt to free a NULL jid");
+        exit(1);
+    }
+    // for (size_t i = 0; i < jid->ChildrenCount; i++) {
+    //     JIDDestroy(jid->Children[i]);
+    // }
+    for (size_t i = 0; i < jid->ComponentCount; i++) {
+        if (0){//ComponentNameEq(jid->Components[i], "ComponentColor")) {
+        //     ComponentColorFree((ComponentColor*)jid->Components[i]);
+        // } else if (ComponentNameEq(jid->Components[i], "ComponentTextRenderer")) {
+        //     ComponentTextRendererFree((ComponentTextRenderer*)jid->Components[i]);
+        } else {
+            // free(jid->Components[i]->ComponentName);
+            free(jid->Components[i]);
+        }
+    }
+    // free(jid->Components);
+    // free((char*)jid->JIDType);
+    free(jid->Children);
+    if (jid->Parent != NULL) {
+        jid->Parent->ChildrenCount--;
+    }
+    jid->Parent = NULL;
+    free(jid);
 }

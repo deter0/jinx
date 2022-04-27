@@ -11,11 +11,11 @@
 #include "x11.c"
 #include "eventHandler.c"
 
-#include "renderer/renderer.h"
-#include "renderer/jid.h"
+#include "core/renderer.h"
+#include "core/jid.h"
 
-#include "renderer/jid.c"
-#include "renderer/renderer.c"
+#include "core/jid.c"
+#include "core/renderer.c"
 
 #define X11
 
@@ -43,6 +43,7 @@ static void update(EventHandler *eh, double dt) {
 }
 
 static void render(EventHandler *eh) {
+    (void)eh;
     renderRoot(root, ctx);
 }
 
@@ -51,16 +52,16 @@ int main(void) {
     assert(false && "Not Implemented");
     exit(1);
 #endif
-    root = JIDRoot(800, 800);
-    JID *text = JIDText(0, 0, "Hello! test: « ♫ šµ ♪ »!");
-    JIDSetParent(text, root);
-    text = JIDText(0, 26, "Bye :(");
-    ComponentTextRenderer *textRenderer =
-        (ComponentTextRenderer *)getComponentHard(text,
-                                                "ComponentTextRenderer",
-                                                NULL);
-    textRenderer->FontSize = 12;
-    JIDSetParent(text, root);
+    root = JIDRoot(800, 800); 
+    JID *txt = JIDText(0, 0, "Hello");
+    ComponentTextRenderer *rnd = (ComponentTextRenderer*)getComponentHard(txt, "ComponentTextRenderer", NULL);
+    ComponentColor *color = (ComponentColor*)getComponentHard(txt, "ComponentColor", NULL);
+    color->background->r = 255;
+    color->background->g = 0;
+    color->background->b = 0;
+    color->background->a = 1;
+    rnd->Text = "Hi";
+    JIDSetParent(txt, root);
 
     X11Window window = createWindow(800, 800);
     cairo_surface_t *surface = cairo_xlib_surface_create(

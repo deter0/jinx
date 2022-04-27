@@ -7,7 +7,7 @@
 
 /* Jinx Widget */
 typedef struct JID {
-    const char *JIDType;
+    char *JIDType;
     struct JIDComponent *Components[MAX_COMPONENTS];
     size_t ComponentCount;
 
@@ -18,7 +18,7 @@ typedef struct JID {
     struct JID *Parent;
 } JID;
 
-#define ExtendJIDComponent const char *ComponentName; \
+#define ExtendJIDComponent     char *ComponentName; \
                                bool isRenderable;
 
 typedef struct JIDComponent {
@@ -44,15 +44,18 @@ typedef struct ComponentTextRenderer {
     ExtendJIDRenderableComp;
     int FontSize;
     char *Text;
+    char *Font;
+    bool Bold;
 } ComponentTextRenderer;
 ComponentTextRenderer *componentTextRenderer(void);
 
 
 typedef struct ComponentRenderDamage {
-    const char *ComponentName;
+    ExtendJIDComponent;
     bool IsDamaged;
 } ComponentRenderDamage;
 ComponentRenderDamage componentRenderDamage(void);
+void ComponentTextRendererFree(ComponentTextRenderer *tr);
 
 /**
  * Add component to a jid
@@ -70,6 +73,13 @@ int JIDAddComp(JID *jid, JIDComponent *comp);
 bool JIDTypeEq(JID *jid, const char *expect);
 
 /**
+ * Compares the component name to the expected
+ *
+ * @return returns true if matches
+*/
+bool ComponentNameEq(JIDComponent *comp, const char *expect);
+
+/**
  * Find's a component within a JID
  *
  * @return The index of the component or -1 if no component is found
@@ -80,7 +90,7 @@ int JIDSetParent(JID *jid, JID *parent);
 
 // Extends `JIDComponent`
 typedef struct ComponentTransform {
-    const char *ComponentName;
+    ExtendJIDComponent;
     float x;
     float y;
     float width;
@@ -100,7 +110,10 @@ typedef struct ComponentColor {
     ExtendJIDComponent;
     RGBA *foreground;
     RGBA *background;
+    bool overridden;
 } ComponentColor;
+void ComponentColorFree(ComponentColor *color);
+
 ComponentColor *componentColorFG(float r, float g, float b, float a);
 ComponentColor *componentColorBG(float r, float g, float b, float a);
 ComponentColor componentColorFGBG(
@@ -113,3 +126,5 @@ static JIDComponent *getComponentSoft(JID *jid, const char *target, const char *
 // Root Component
 JID *JIDRoot(float width, float height);
 JID *JIDRectangle(float x, float y, float width, float height);
+
+void JIDDestroy(JID *jid);
