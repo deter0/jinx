@@ -6,4 +6,3 @@
 #include "core/helpers.h"
 #include "core/renderer.h"
 #include "core/jid.h"
-
