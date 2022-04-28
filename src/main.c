@@ -7,6 +7,10 @@
 
 #include "jinx/jinx.h"
 #include "jinx/jinx.c"
+#include "src/jinx/core/events.h"
+#include "src/jinx/core/helpers.h"
+#include "src/jinx/core/jid.h"
+#include "src/jinx/eventHandler.h"
 
 #define X11
 
@@ -35,10 +39,33 @@ static void update(EventHandler *eh, double dt) {
 
 static void render(EventHandler *eh) {
     (void)eh;
+    printf("no\n");
     ComponentTransform *tf = (ComponentTransform*)getComponentHard(root, "ComponentTransform", NULL);
     tf->width = eh->x11Window->attributes->width;
     tf->height = eh->x11Window->attributes->height;
     renderRoot(root, ctx);
+}
+
+static void mouseMove(EventHandler *eh, float x, float y) {
+    JIDOnMouseMove(root, x, y, eh);
+}
+static void forwardClick(EventHandler *eh, float x, float y) {
+    JIDOnMouseClick(root, x, y, eh);
+}
+
+
+static int count = 0;
+static char message[50];
+ComponentTextRenderer *tren;
+
+void onClick(JID *self, float x, float y, EventHandler *eh) {
+    (void)x;
+    (void)y;
+    (void)self;
+    count++;
+    printf("Okay!\n");
+    sprintf(message, "Clicked %d times!", count);
+    tren->Text = message;
 }
 
 int main(void) {
@@ -47,7 +74,7 @@ int main(void) {
     exit(1);
 #endif
     root = JIDRoot(800, 800); 
-    ComponentVBoxLayout *layout = componentVBoxLayout(90, (Padding){
+    ComponentVBoxLayout *layout = componentVBoxLayout(15, (Padding){
         .top = 12,
         .left = 12,
         .bottom = 12,
@@ -58,8 +85,24 @@ int main(void) {
     JIDAddComp(root, (JIDComponent*)layout);
     JID *txt = JIDText(0, 0, "Click The Button");
     JIDSetParent(txt, root);
-    JID *txt2 = JIDText(0, 0, "Slide Me");
-    JIDSetParent(txt2, root);
+
+    JID *button = JIDTextButton(0, 0, "Button");
+    ComponentEventHandler *ceh = (ComponentEventHandler*)getComponentHard(button, "ComponentEventHandler", NULL);
+    ceh->onClick = onClick;
+
+    JID *tracker = JIDText(0, 0, "");
+    sprintf(message, "Clicked %d times!", count);
+    tren = (ComponentTextRenderer*)getComponentSoft(tracker, "ComponentTextRenderer", NULL);
+    tren->Text = message;
+    tren->FontSize = 18;
+    JIDSetFGColor(tracker, (RGBA){
+        .r = 1,
+        .g = 1,
+        .b = 1,
+        .a = 0.8
+    });
+    JIDSetParent(tracker, root);
+    JIDSetParent(button, root);
 
     X11Window window = createWindow(800, 800);
     cairo_surface_t *surface = cairo_xlib_surface_create(
@@ -73,7 +116,9 @@ int main(void) {
     eh.quit = quitWindow;
     eh.keyPress = keyPress;
     eh.render = render;
+    eh.mouseMove = mouseMove;
     eh.update = update;
+    eh.click = forwardClick;
     eventHandlerStart(&eh);
 
     return 0;

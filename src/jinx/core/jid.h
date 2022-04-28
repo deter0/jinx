@@ -1,4 +1,5 @@
 #pragma once
+#include "src/jinx/eventHandler.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <cairo/cairo.h>
@@ -71,6 +72,7 @@ typedef struct ComponentTextRenderer {
     char *Text;
     char *Font;
     bool Bold;
+    Padding Padding;
 } ComponentTextRenderer;
 ComponentTextRenderer *componentTextRenderer(void);
 
@@ -138,6 +140,15 @@ typedef struct ComponentColor {
 } ComponentColor;
 void ComponentColorFree(ComponentColor *color);
 
+// Extends `JIDComponent`
+typedef struct ComponentEventHandler {
+    ExtendJIDComponent;
+    void (*onClick)(JID *self, float x, float y, EventHandler *eh);
+    void (*onMouseEnter)(JID *self, float x, float y, EventHandler *eh);
+    void (*onMouseLeave)(JID *self, float x, float y, EventHandler *eh);
+} ComponentEventHandler;
+ComponentEventHandler *componentEventHandler(void);
+
 ComponentColor *componentColorFG(float r, float g, float b, float a);
 ComponentColor *componentColorBG(float r, float g, float b, float a);
 
@@ -147,5 +158,7 @@ JIDComponent *getComponentSoft(JID *jid, const char *target, const char *from);
 // Root Component
 JID *JIDRoot(float width, float height);
 JID *JIDRectangle(float x, float y, float width, float height);
+JID *JIDText(float x, float y, char *text);
+JID *JIDTextButton(float x, float y, char *text);
 
 void JIDDestroy(JID *jid);

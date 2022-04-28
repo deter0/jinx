@@ -67,31 +67,36 @@ void renderTextRenderer(JID *jid, cairo_t *ctx) {
         cairo_set_source_rgba(ctx, 0.0, 0.0, 0.0, 1.0);
     }
     cairo_set_font_size(ctx, (double)tren->FontSize);
-    cairo_move_to(ctx, transform->x, transform->y + tren->FontSize);
+    cairo_move_to(ctx,
+        transform->x + tren->Padding.left * 0.5,
+        transform->y + + tren->Padding.top * 0.5 + tren->FontSize);
     cairo_select_font_face(ctx, "Poppins",
       CAIRO_FONT_SLANT_NORMAL,
       CAIRO_FONT_WEIGHT_NORMAL);
     cairo_text_extents_t exts = {0};
     cairo_text_extents(ctx, tren->Text, &exts);
-    transform->width = exts.width;
+    transform->width = exts.width + exts.x_bearing + (tren->FontSize / 26.0);
     transform->height = exts.height * 2;
+    transform->height += tren->Padding.bottom;
+    transform->width += tren->Padding.right;
+    printf("%f\n", tren->Padding.bottom);
 
     cairo_show_text(ctx, tren->Text);
-    if (color != NULL) {
-        if (color->background.a > 0) {
-            cairo_rectangle(ctx,
-                transform->x,
-                transform->y,
-                transform->width,
-                transform->height);
-            cairo_set_source_rgba(ctx,
-                color->background.r,
-                color->background.g,
-                color->background.b,
-                color->background.a);
-            cairo_fill(ctx);
-        }
-    }
+    // if (color != NULL) {
+    //     if (color->background.a > 0) {
+    //         cairo_rectangle(ctx,
+    //             transform->x,
+    //             transform->y,
+    //             transform->width,
+    //             transform->height);
+    //         cairo_set_source_rgba(ctx,
+    //             color->background.r,
+    //             color->background.g,
+    //             color->background.b,
+    //             color->background.a);
+    //         cairo_fill(ctx);
+    //     }
+    // }
 
     cairo_restore(ctx);
 }

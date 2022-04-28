@@ -5,6 +5,7 @@
 #include "src/jinx/core/renderFunctions.h"
 #include "src/jinx/core/layouts.h"
 #include "src/jinx/core/helpers.h"
+#include "src/jinx/eventHandler.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,8 +35,9 @@ JIDComponent *getComponentHard(JID *jid, const char *target, const char *from) {
 JIDComponent *getComponentSoft(JID *jid, const char *target, const char *from) {
     int index = JIDFindComp(jid, target);
     if (index == -1) {
-        fprintf(stderr, "Component `%s` recommends component: `%s`\n", from,
-            target);
+        if (from != NULL)
+            fprintf(stderr, "Component `%s` recommends component: `%s`\n", from,
+                target);
         return NULL;
     }
     return jid->Components[index];
@@ -63,6 +65,12 @@ ComponentTextRenderer *componentTextRenderer(void) {
     rndr->isRenderable = true;
     rndr->isLayout = false;
     rndr->isHovering = false;
+    rndr->Padding = (Padding){
+        .top = 0,
+        .bottom = 0,
+        .left = 0,
+        .right = 0
+    };
     return rndr;
 }
 
@@ -140,6 +148,83 @@ JID *JIDText(float x, float y, char *text) {
         .b = 1.0,
         .a = 0.0
     }) != 1); // TODO: Unhardcode
+    return rect;
+}
+
+ComponentEventHandler *componentEventHandler(void) {
+    ComponentEventHandler *ceh = scalloc(sizeof(ComponentEventHandler));
+    ceh->ComponentName = "ComponentEventHandler";
+    ceh->isLayout = false;
+    ceh->isRenderable = false;
+    ceh->onClick = NULL;
+    ceh->onMouseEnter = NULL;
+    ceh->onMouseLeave = NULL;
+    return ceh;
+}
+
+void defaultMouseEnter(JID *self, float x, float y, EventHandler *eh) {
+    (void)x;
+    (void)y;
+    JIDSetBGColor(self, (RGBA){
+        .r = 155 / 255.0,
+        .g = 122 / 255.0,
+        .b = 240 / 255.0,
+        .a = 1.0
+    });
+    eh->render(eh);
+}
+void defaultMouseLeave(JID *self, float x, float y, EventHandler *eh) {
+    (void)x;
+    (void)y;
+    JIDSetBGColor(self, (RGBA){
+        .r = 120 / 255.0,
+        .g = 75 / 255.0,
+        .b = 236 / 255.0,
+        .a = 1.0
+    });
+    eh->render(eh);
+}
+
+JID *JIDTextButton(float x, float y, char *text) {
+    JID *rect = scalloc(sizeof(JID));
+
+    rect->JIDType = "TextButton";
+    rect->Children = NULL;
+    rect->ChildrenCount = 0;
+    rect->ChildrenAlloc = 0;
+    rect->ComponentCount = 0;
+
+    const int fontSize = 20;
+    ComponentTransform *transform = componentTransform(x, y, strlen(text) * fontSize, fontSize);
+    assert(JIDAddComp(rect, (JIDComponent*)transform) != 1);
+    ComponentColor *color = componentColorFG(1.0, 1.0, 1.0, 1.0);
+    assert(JIDAddComp(rect, (JIDComponent*)color) != 1);
+    ComponentTextRenderer *textRenderer = componentTextRenderer();
+    textRenderer->Text = text;
+    textRenderer->FontSize = fontSize;
+    textRenderer->Padding = (Padding){
+        .top = 12,
+        .bottom = 12,
+        .left = 12,
+        .right = 12
+    };
+
+    ComponentRectangleRenderer *rectangle = componentRectangleRenderer();
+    rectangle->BorderRadius = 6;
+    JIDSetBGColor(rect, (RGBA){
+        .r = 120 / 255.0,
+        .g = 75 / 255.0,
+        .b = 236 / 255.0,
+        .a = 1.0
+    });
+    ComponentEventHandler *ceh = componentEventHandler();
+    ceh->onMouseEnter = defaultMouseEnter;
+    ceh->onMouseLeave = defaultMouseLeave;
+
+    assert(JIDAddComp(rect, (JIDComponent*)rectangle) != 1);
+    assert(JIDAddComp(rect, (JIDComponent*)textRenderer) != 1);
+    assert(JIDAddComp(rect, (JIDComponent*)ceh) != 1);
+
     return rect;
 }
 
