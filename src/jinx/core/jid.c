@@ -62,6 +62,7 @@ ComponentTextRenderer *componentTextRenderer(void) {
     rndr->render = renderTextRenderer;
     rndr->isRenderable = true;
     rndr->isLayout = false;
+    rndr->isHovering = false;
     return rndr;
 }
 
@@ -137,9 +138,8 @@ JID *JIDText(float x, float y, char *text) {
         .r = 1.0,
         .g = 1.0,
         .b = 1.0,
-        .a = 1.0
+        .a = 0.0
     }) != 1); // TODO: Unhardcode
-
     return rect;
 }
 
@@ -221,6 +221,7 @@ ComponentRectangleRenderer *componentRectangleRenderer(void) {
     renderer->BorderRadius = 0;
     renderer->isRenderable = true;
     renderer->render = renderRectangleRenderer;
+    renderer->isHovering = false;
     return renderer;
 }
 ComponentRenderDamage componentRenderDamage(void) {

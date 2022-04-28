@@ -27,7 +27,8 @@ typedef struct JIDComponent {
 } JIDComponent;
 
 #define ExtendJIDRenderableComp ExtendJIDComponent;\
-                            void(*render)(JID *jid, cairo_t *ctx);
+                                void(*render)(JID *jid, cairo_t *ctx); \
+                                bool isHovering;
 #define ExtendJIDLayoutComp ExtendJIDComponent;\
                             void(*compute)(JID *self);
 // Extends `JIDComponent`

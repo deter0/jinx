@@ -1,3 +1,4 @@
+#include <X11/X.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -11,6 +12,7 @@ static void defaultQuit(EventHandler *eh) { (void)eh; }
 static void defaultKeyPress(EventHandler *eh, unsigned int keyCode) { (void)eh; (void)keyCode; }
 static void defaultRender(EventHandler *eh) { (void)eh; }
 static void defaultUpdate(EventHandler *eh, double dt) { (void)eh; (void)dt; }
+static void defaultClickHandler(EventHandler *eh, float x, float y) { (void)eh; (void)x; (void)y; }
 
 // Put stuff like cairo_t inside userData
 EventHandler eventHandler(X11Window *xWindow, void *userData) {
@@ -20,7 +22,10 @@ EventHandler eventHandler(X11Window *xWindow, void *userData) {
         .keyPress = defaultKeyPress,
         .quit = defaultQuit,
         .render = defaultRender,
-        .update = defaultUpdate
+        .update = defaultUpdate,
+        .click = defaultClickHandler,
+        .rightClick = defaultClickHandler,
+        .mouseMove = defaultClickHandler
     };
 }
 
@@ -49,7 +54,22 @@ void eventHandlerStart(EventHandler *eh) {
                             window.attributes);
                         eh->render(eh);
                         break;
-                    case ButtonPress:
+                    case MotionNotify:
+                        eh->mouseX = (float)event.xmotion.x;
+                        eh->mouseY = (float)event.xmotion.y;
+                        eh->mouseMove(eh, eh->mouseX, eh->mouseY);
+                        break;
+                    case ButtonPressMask:
+                        switch (event.xbutton.button) {
+                            case 1:
+                                eh->click(eh, (float)event.xbutton.x, (float)event.xbutton.y);
+                                break;
+                            case 3:
+                                eh->rightClick(eh, (float)event.xbutton.x, (float)event.xbutton.y);
+                                break;
+                            default:
+                                fprintf(stderr, "Unhandled click: %d\n", event.xbutton.button);
+                        }
                         break;
                     case KeyPress:
                         eh->keyPress(eh, event.xkey.keycode);

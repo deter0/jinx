@@ -72,10 +72,10 @@ X11Window createWindow(unsigned int width, unsigned int height) {
 	XSetWMProtocols(display, win, &deleteWindow, 1);
 
 	SetWindowClass("jinx", xWindow);
-	XSelectInput(display, win, ExposureMask | KeyPressMask);
 	XStoreName(display, win, "jinx");
 	v2 screen_size = GetDisplaySize(xWindow);
 
+	XSelectInput(display, win, ButtonPressMask | ButtonReleaseMask | KeyPressMask | PointerMotionMask | StructureNotifyMask | ExposureMask);
 	XMapWindow(display, win);
 	
 	xWindow.dim.position.x = screen_size.x / 2 - (xWindow.dim.size.x / 2);

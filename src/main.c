@@ -59,20 +59,8 @@ int main(void) {
     layout->NoAutoSizeY = true;
     JIDAddComp(root, (JIDComponent*)layout);
     JID *txt = JIDText(0, 0, "Click The Button");
-    JIDSetBGColor(txt, (RGBA){
-        .r = 1.0,
-        .g = 0.0,
-        .b = 0.0,
-        .a = 0.5
-    });
     JIDSetParent(txt, root);
     JID *txt2 = JIDText(0, 0, "Slide Me");
-    JIDSetBGColor(txt2, (RGBA){
-        .r = 1.0,
-        .g = 0.0,
-        .b = 0.0,
-        .a = 0.5
-    });
     JIDSetParent(txt2, root);
 
     X11Window window = createWindow(800, 800);

@@ -10,6 +10,12 @@ typedef struct EventHandler {
     void (*render)(struct EventHandler *eh);
     void (*quit)(struct EventHandler *eh);
     void (*update)(struct EventHandler *eh, double dt);
+    void (*click)(struct EventHandler *eh, float x, float y);
+    void (*rightClick)(struct EventHandler *eh, float x, float y);
+    void (*mouseMove)(struct EventHandler *eh, float x, float y);
+
+    float mouseX;
+    float mouseY;
 } EventHandler;
 
 void voidFn(void);
