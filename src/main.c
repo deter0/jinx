@@ -7,8 +7,6 @@
 
 #include "jinx/jinx.h"
 #include "jinx/jinx.c"
-#include "src/jinx/core/helpers.h"
-#include "src/jinx/core/jid.h"
 
 #define X11
 
