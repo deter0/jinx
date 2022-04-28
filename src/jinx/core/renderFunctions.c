@@ -108,4 +108,3 @@ static void roundedRectangle(cairo_t *ctx, float x, float y, float w, float h, f
     cairo_arc (ctx, x + radius, y + radius, radius, 180 * degrees, 270 * degrees);
     cairo_close_path(ctx);
 }
-

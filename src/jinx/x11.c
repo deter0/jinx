@@ -88,4 +88,3 @@ X11Window createWindow(unsigned int width, unsigned int height) {
 	
 	return xWindow;
 }
-

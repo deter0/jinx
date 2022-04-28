@@ -3,7 +3,7 @@
 #include <assert.h>
 
 #include "layouts.h"
-#include "src/jinx/core/jid.h"
+#include "jid.h"
 
 void componentVBoxLayoutCompute(JID *self) {
     ComponentVBoxLayout *layout = (ComponentVBoxLayout*)getComponentHard(self,
