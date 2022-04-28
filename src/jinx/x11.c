@@ -7,7 +7,6 @@
 #include <X11/Xatom.h>
 
 #include <stdbool.h>
-#include <cairo/cairo.h>
 #include <assert.h>
 #include <string.h>
 

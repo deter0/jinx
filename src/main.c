@@ -8,6 +8,7 @@
 #include "jinx/jinx.h"
 #include "jinx/jinx.c"
 #include "src/jinx/core/helpers.h"
+#include "src/jinx/core/jid.h"
 
 #define X11
 
@@ -36,6 +37,9 @@ static void update(EventHandler *eh, double dt) {
 
 static void render(EventHandler *eh) {
     (void)eh;
+    ComponentTransform *tf = (ComponentTransform*)getComponentHard(root, "ComponentTransform", NULL);
+    tf->width = eh->x11Window->attributes->width;
+    tf->height = eh->x11Window->attributes->height;
     renderRoot(root, ctx);
 }
 
@@ -45,15 +49,29 @@ int main(void) {
     exit(1);
 #endif
     root = JIDRoot(800, 800); 
-    JID *txt = JIDText(0, 0, "Click the button:");
-    assert(JIDSetText(txt, "Click the button please!") != 1);
-    assert(JIDSetFGColor(txt, (RGBA){
-        .r = 255 / 255.0,
-        .g = 255 / 255.0,
-        .b = 25 / 255.0,
-        .a = 1
-    }) != 1);
+    ComponentVBoxLayout *layout = componentVBoxLayout(90, (Padding){
+        .top = 12,
+        .left = 12,
+        .bottom = 12,
+        .right = 12
+    });
+    JIDAddComp(root, (JIDComponent*)layout);
+    JID *txt = JIDText(0, 0, "Click The Button");
+    JIDSetBGColor(txt, (RGBA){
+        .r = 1.0,
+        .g = 0.0,
+        .b = 0.0,
+        .a = 0.5
+    });
     JIDSetParent(txt, root);
+    JID *txt2 = JIDText(0, 0, "Slide Me");
+    JIDSetBGColor(txt2, (RGBA){
+        .r = 1.0,
+        .g = 0.0,
+        .b = 0.0,
+        .a = 0.5
+    });
+    JIDSetParent(txt2, root);
 
     X11Window window = createWindow(800, 800);
     cairo_surface_t *surface = cairo_xlib_surface_create(

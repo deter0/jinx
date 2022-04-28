@@ -6,3 +6,5 @@
 #include "core/jid.c"
 #include "core/renderer.c"
 #include "core/helpers.c"
+#include "core/renderFunctions.c"
+#include "core/layouts.c"

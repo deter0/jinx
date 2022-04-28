@@ -2,7 +2,9 @@
 
 #include "src/jinx/core/jid.h"
 #include "src/jinx/core/renderer.h"
-#include "src/jinx/core/renderFunctions.c"
+#include "src/jinx/core/renderFunctions.h"
+#include "src/jinx/core/layouts.h"
+#include "src/jinx/core/helpers.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,6 +50,7 @@ ComponentTransform *componentTransform(float x, float y, float w, float h) {
     transform->y = y;
     transform->width = w;
     transform->height = h;
+    transform->isLayout = false;
     return transform;
 }
 
@@ -58,6 +61,7 @@ ComponentTextRenderer *componentTextRenderer(void) {
     rndr->Text = "";
     rndr->render = renderTextRenderer;
     rndr->isRenderable = true;
+    rndr->isLayout = false;
     return rndr;
 }
 
@@ -82,6 +86,12 @@ JID *JIDRoot(float width, float height) {
     assert(JIDAddComp(root, (JIDComponent*)color) != 1);
     ComponentRectangleRenderer *rectangleRenderer = componentRectangleRenderer();
     assert(JIDAddComp(root, (JIDComponent*)rectangleRenderer) != 1);
+    assert(JIDSetBGColor(root, (RGBA){
+        .r = 20 / 255.0,
+        .g = 22 / 255.0,
+        .b = 21 / 255.0,
+        .a = 1.0
+    }) != 1); // TODO: Unhardcode
 
     return root;
 }
@@ -123,6 +133,12 @@ JID *JIDText(float x, float y, char *text) {
     textRenderer->Text = text;
     textRenderer->FontSize = fontSize;
     assert(JIDAddComp(rect, (JIDComponent*)textRenderer) != 1);
+    assert(JIDSetBGColor(rect, (RGBA){
+        .r = 1.0,
+        .g = 1.0,
+        .b = 1.0,
+        .a = 1.0
+    }) != 1); // TODO: Unhardcode
 
     return rect;
 }
@@ -186,6 +202,16 @@ ComponentColor *componentColorFG(float r, float g, float b, float a) {
     return color;
 }
 
+ComponentVBoxLayout *componentVBoxLayout(float spacing, Padding padding) {
+    ComponentVBoxLayout *vboxLayout = scalloc(sizeof(ComponentVBoxLayout));
+    vboxLayout->isLayout = true;
+    vboxLayout->isRenderable = false;
+    vboxLayout->Padding = padding;
+    vboxLayout->Spacing = spacing;
+    vboxLayout->ComponentName = "ComponentVBoxLayout";
+    vboxLayout->compute = componentVBoxLayoutCompute;
+    return vboxLayout;
+}
 
 ComponentRectangleRenderer *componentRectangleRenderer(void) {
     ComponentRectangleRenderer *renderer = scalloc(sizeof(ComponentRectangleRenderer));
