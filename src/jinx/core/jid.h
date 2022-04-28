@@ -51,6 +51,8 @@ typedef struct ComponentVBoxLayout {
     ExtendJIDLayoutComp;
     Padding Padding;
     float Spacing;
+    bool NoAutoSizeX;
+    bool NoAutoSizeY;
 } ComponentVBoxLayout;
 ComponentVBoxLayout *componentVBoxLayout(float spacing, Padding padding);
 

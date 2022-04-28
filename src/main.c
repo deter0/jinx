@@ -55,6 +55,8 @@ int main(void) {
         .bottom = 12,
         .right = 12
     });
+    layout->NoAutoSizeX = true;
+    layout->NoAutoSizeY = true;
     JIDAddComp(root, (JIDComponent*)layout);
     JID *txt = JIDText(0, 0, "Click The Button");
     JIDSetBGColor(txt, (RGBA){

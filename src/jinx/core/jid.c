@@ -210,6 +210,8 @@ ComponentVBoxLayout *componentVBoxLayout(float spacing, Padding padding) {
     vboxLayout->Spacing = spacing;
     vboxLayout->ComponentName = "ComponentVBoxLayout";
     vboxLayout->compute = componentVBoxLayoutCompute;
+    vboxLayout->NoAutoSizeX = false;
+    vboxLayout->NoAutoSizeY = false;
     return vboxLayout;
 }
 

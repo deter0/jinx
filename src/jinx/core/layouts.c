@@ -37,7 +37,9 @@ void componentVBoxLayoutCompute(JID *self) {
     lastY += layout->Padding.bottom;
     lastY -= layout->Spacing;
     if (selfTransform) {
-        selfTransform->height = lastY;
-        selfTransform->width = greatestX - selfTransform->x + layout->Padding.right;
+        if (!layout->NoAutoSizeY)
+            selfTransform->height = lastY;
+        if (!layout->NoAutoSizeX)
+            selfTransform->width = greatestX - selfTransform->x + layout->Padding.right;
     }
 }
