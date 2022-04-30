@@ -274,6 +274,8 @@ ComponentColor *componentColorBG(float r, float g, float b, float a) {
 ComponentColor *componentColorFG(float r, float g, float b, float a) {
     ComponentColor *color = scalloc(sizeof(ComponentColor));
     color->ComponentName = "ComponentColor";
+    color->isLayout = false;
+    color->isRenderable = false;
     // color->background = (RGBA*)scalloc(sizeof(RGBA));
     color->background.r = 0.0;
     color->background.g = 0.0;
@@ -298,6 +300,19 @@ ComponentVBoxLayout *componentVBoxLayout(float spacing, Padding padding) {
     vboxLayout->NoAutoSizeX = false;
     vboxLayout->NoAutoSizeY = false;
     return vboxLayout;
+}
+
+ComponentHBoxLayout *componentHBoxLayout(float spacing, Padding padding) {
+    ComponentHBoxLayout *hboxLayout = scalloc(sizeof(ComponentHBoxLayout));
+    hboxLayout->isLayout = true;
+    hboxLayout->isRenderable = false;
+    hboxLayout->Padding = padding;
+    hboxLayout->Spacing = spacing;
+    hboxLayout->ComponentName = "ComponentHBoxLayout";
+    hboxLayout->compute = componentHBoxLayoutCompute;
+    hboxLayout->NoAutoSizeX = false;
+    hboxLayout->NoAutoSizeY = false;
+    return hboxLayout;
 }
 
 ComponentRectangleRenderer *componentRectangleRenderer(void) {

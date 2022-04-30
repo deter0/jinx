@@ -20,8 +20,8 @@ typedef struct JID {
 } JID;
 
 #define ExtendJIDComponent     char *ComponentName; \
-                               bool isRenderable; \
-                               bool isLayout;
+                               bool isLayout; \
+                               bool isRenderable
 
 typedef struct JIDComponent {
     ExtendJIDComponent;
@@ -29,9 +29,9 @@ typedef struct JIDComponent {
 
 #define ExtendJIDRenderableComp ExtendJIDComponent;\
                                 void(*render)(JID *jid, cairo_t *ctx); \
-                                bool isHovering;
+                                bool isHovering
 #define ExtendJIDLayoutComp ExtendJIDComponent;\
-                            void(*compute)(JID *self);
+                            void(*compute)(JID *self)
 // Extends `JIDComponent`
 typedef struct ComponentRenderable {
     ExtendJIDRenderableComp;
@@ -57,6 +57,16 @@ typedef struct ComponentVBoxLayout {
     bool NoAutoSizeY;
 } ComponentVBoxLayout;
 ComponentVBoxLayout *componentVBoxLayout(float spacing, Padding padding);
+
+typedef struct ComponentHBoxLayout {
+    ExtendJIDLayoutComp;
+    Padding Padding;
+    float Spacing;
+    bool NoAutoSizeX;
+    bool NoAutoSizeY;
+} ComponentHBoxLayout;
+ComponentHBoxLayout *componentHBoxLayout(float spacing, Padding padding);
+
 
 // Extends `JIDComponentRenderable`
 typedef struct ComponentRectangleRenderer {

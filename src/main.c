@@ -32,11 +32,6 @@ static void keyPress(EventHandler *eh, unsigned int keyCode) {
 static JID *root;
 static cairo_t *ctx;
 
-static void update(EventHandler *eh, double dt) {
-    (void)dt;
-    (void)eh;
-}
-
 static void render(EventHandler *eh) {
     (void)eh;
     printf("no\n");
@@ -104,6 +99,21 @@ int main(void) {
     JIDSetParent(tracker, root);
     JIDSetParent(button, root);
 
+    JIDSetParent(JIDText(0, 0, "Nested layout test"), root);
+    JID *rect = JIDRectangle(0, 0, 100, 100);
+    ComponentHBoxLayout *hlayout = componentHBoxLayout(15, (Padding){
+        .top = 12,
+        .left = 12,
+        .bottom = 12,
+        .right = 12
+    });
+    JIDAddComp(rect, (JIDComponent *)hlayout);
+    // char buttonText[25];
+    for (int i = 0; i < 5; i++) {
+        JID *button = JIDTextButton(0, 0, "Button");
+        JIDSetParent(button, root);
+    }
+
     X11Window window = createWindow(800, 800);
     cairo_surface_t *surface = cairo_xlib_surface_create(
         window.display,
@@ -117,7 +127,7 @@ int main(void) {
     eh.keyPress = keyPress;
     eh.render = render;
     eh.mouseMove = mouseMove;
-    eh.update = update;
+    // eh.update = update;
     eh.click = forwardClick;
     eventHandlerStart(&eh);
 

@@ -1,18 +1,22 @@
 #include <cairo/cairo.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "src/jinx/core/jid.h"
 
 static void findAlone(JID *jid, JID **alone, size_t *aloneAlloc, size_t *aloneLen) {
     for (size_t i = 0; i < jid->ChildrenCount; i++) {
         if (jid->Children[i]->ChildrenCount <= 0) { // Alone
-            if (aloneLen + 1 >= aloneAlloc) {
+            if (*aloneLen + 1 >= *aloneAlloc) {
                 *aloneAlloc = *aloneAlloc * 2;
-                alone = realloc(alone, sizeof(JID*) * *aloneAlloc);
+                alone = (JID**)realloc(alone, sizeof(JID*) * *aloneAlloc);
+                assert(alone != NULL);
             }
             alone[*aloneLen] = jid->Children[i];
-            *aloneLen = *aloneLen + 1;
+            printf("ADded alone: %s, %zu %zu\n", jid->Children[i]->JIDType,
+                                        *aloneLen, *aloneAlloc);
+            *aloneLen += 1;
         } else {
             findAlone(jid->Children[i], alone, aloneAlloc, aloneLen);
         }
@@ -20,11 +24,15 @@ static void findAlone(JID *jid, JID **alone, size_t *aloneAlloc, size_t *aloneLe
 }
 
 static void layoutUpdateRecurseUpward(JID *alone) {
+    if (alone == NULL)
+        return;
+    printf("Has components: %zu\n", alone->ComponentCount);
     for (size_t i = 0; i < alone->ComponentCount; i++) {
-        if (alone->Components[i]->isLayout == 1) {
+        printf("Component: %zu\n", i);
+        if (alone->Components[i] != NULL && alone->Components[i]->isLayout) {
             ComponentLayout *layout = (ComponentLayout*)alone->Components[i];
             if (layout->compute != NULL) {
-                printf("Updated layout\n");
+                printf("Updated layout: %s\n", layout->ComponentName);
                 layout->compute(alone);
             } else {
                 fprintf(stderr, "Layout component %s compute function is null.\n", layout->ComponentName);
@@ -37,12 +45,15 @@ static void layoutUpdateRecurseUpward(JID *alone) {
 }
 
 static void updateLayouts(JID *rootJID) {
-    JID **alone = malloc(sizeof(JID*) * 200);
     size_t aloneAllocated = 200;
     size_t aloneLength = 0;
+    JID **alone = malloc(sizeof(JID*) * aloneAllocated);
+    assert(alone != NULL);
     findAlone(rootJID, alone, &aloneAllocated, &aloneLength);
-    for (size_t i = 0; i < aloneLength; i++) {
-        layoutUpdateRecurseUpward(alone[i]);
+    printf("Alone: %zu\n", aloneLength);
+    for (size_t i = 0; i < aloneLength ; i++) {
+        if (alone[i]->JIDType != NULL)
+            layoutUpdateRecurseUpward(alone[i]);
     }
 }
 

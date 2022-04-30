@@ -1,4 +1,5 @@
 #include <X11/X.h>
+#include <X11/Xlib.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -44,7 +45,15 @@ void eventHandlerStart(EventHandler *eh) {
             double deltaUsec = (curr.tv_usec - last.tv_usec) / (double)1000;
             gettimeofday(&last, NULL);
             eh->update(eh, deltaUsec);
-            XNextEvent(window.display, &event);
+            if (eh->update == NULL) {
+                XNextEvent(window.display, &event);
+            } else {
+                if (XPending(window.display)) {
+                    XNextEvent(window.display, &event);
+                } else {
+                    usleep(1600);
+                }
+            }
             // if (XPending(window.display)) {
 
                 switch (event.type) {
