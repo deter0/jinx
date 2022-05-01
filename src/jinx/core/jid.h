@@ -31,7 +31,8 @@ typedef struct JIDComponent {
                                 void(*render)(JID *jid, cairo_t *ctx); \
                                 bool isHovering
 #define ExtendJIDLayoutComp ExtendJIDComponent;\
-                            void(*compute)(JID *self)
+                            void(*compute)(JID *self); \
+                            int LastSeed
 // Extends `JIDComponent`
 typedef struct ComponentRenderable {
     ExtendJIDRenderableComp;

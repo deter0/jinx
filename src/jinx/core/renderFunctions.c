@@ -70,16 +70,15 @@ void renderTextRenderer(JID *jid, cairo_t *ctx) {
     cairo_move_to(ctx,
         transform->x + tren->Padding.left * 0.5,
         transform->y + + tren->Padding.top * 0.5 + tren->FontSize);
-    cairo_select_font_face(ctx, "Poppins",
+    cairo_select_font_face(ctx, "Noto Sans UI",
       CAIRO_FONT_SLANT_NORMAL,
       CAIRO_FONT_WEIGHT_NORMAL);
     cairo_text_extents_t exts = {0};
     cairo_text_extents(ctx, tren->Text, &exts);
     transform->width = exts.width + exts.x_bearing + (tren->FontSize / 26.0);
-    transform->height = exts.height * 2;
+    transform->height = tren->FontSize + tren->Padding.bottom * 0.5;
     transform->height += tren->Padding.bottom;
     transform->width += tren->Padding.right;
-    printf("%f\n", tren->Padding.bottom);
 
     cairo_show_text(ctx, tren->Text);
     // if (color != NULL) {

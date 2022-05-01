@@ -14,8 +14,6 @@ static void findAlone(JID *jid, JID **alone, size_t *aloneAlloc, size_t *aloneLe
                 assert(alone != NULL);
             }
             alone[*aloneLen] = jid->Children[i];
-            printf("ADded alone: %s, %zu %zu\n", jid->Children[i]->JIDType,
-                                        *aloneLen, *aloneAlloc);
             *aloneLen += 1;
         } else {
             findAlone(jid->Children[i], alone, aloneAlloc, aloneLen);
@@ -23,24 +21,26 @@ static void findAlone(JID *jid, JID **alone, size_t *aloneAlloc, size_t *aloneLe
     }
 }
 
-static void layoutUpdateRecurseUpward(JID *alone) {
+static void layoutUpdateRecurseUpward(JID *alone, int seed) {
     if (alone == NULL)
         return;
-    printf("Has components: %zu\n", alone->ComponentCount);
     for (size_t i = 0; i < alone->ComponentCount; i++) {
-        printf("Component: %zu\n", i);
         if (alone->Components[i] != NULL && alone->Components[i]->isLayout) {
             ComponentLayout *layout = (ComponentLayout*)alone->Components[i];
             if (layout->compute != NULL) {
-                printf("Updated layout: %s\n", layout->ComponentName);
-                layout->compute(alone);
+                if (layout->LastSeed != seed) {
+                    layout->compute(alone);
+                    layout->LastSeed = seed;
+                } else {
+                    // printf("Dropped layout update.\n");
+                }
             } else {
                 fprintf(stderr, "Layout component %s compute function is null.\n", layout->ComponentName);
             }
         }
     }
     if (alone->Parent != NULL) {
-        layoutUpdateRecurseUpward(alone->Parent);
+        layoutUpdateRecurseUpward(alone->Parent, seed);
     }
 }
 
@@ -49,11 +49,11 @@ static void updateLayouts(JID *rootJID) {
     size_t aloneLength = 0;
     JID **alone = malloc(sizeof(JID*) * aloneAllocated);
     assert(alone != NULL);
+    int seed = rand();
     findAlone(rootJID, alone, &aloneAllocated, &aloneLength);
-    printf("Alone: %zu\n", aloneLength);
     for (size_t i = 0; i < aloneLength ; i++) {
         if (alone[i]->JIDType != NULL)
-            layoutUpdateRecurseUpward(alone[i]);
+            layoutUpdateRecurseUpward(alone[i], seed);
     }
 }
 

@@ -6,7 +6,6 @@
 #include "jid.h"
 
 void componentVBoxLayoutCompute(JID *self) {
-    printf("!!\n");
     ComponentVBoxLayout *layout = (ComponentVBoxLayout*)getComponentHard(self,
                                  "ComponentVBoxLayout", "componentVBoxLayoutCompute");
     ComponentTransform *selfTransform = (ComponentTransform*)getComponentSoft(self,
@@ -47,7 +46,6 @@ void componentVBoxLayoutCompute(JID *self) {
 
 
 void componentHBoxLayoutCompute(JID *self) {
-    printf("!!\n");
     ComponentHBoxLayout *layout = (ComponentHBoxLayout*)getComponentHard(self,
                                  "ComponentHBoxLayout", "componentHBoxLayoutCompute");
     ComponentTransform *selfTransform = (ComponentTransform*)getComponentSoft(self,
@@ -73,11 +71,11 @@ void componentHBoxLayoutCompute(JID *self) {
             }
         }
     }
-    lastX += layout->Padding.right;
+    // lastX += layout->Padding.right;
     lastX -= layout->Spacing;
     if (selfTransform) {
         if (!layout->NoAutoSizeY)
-            selfTransform->height = lastX;
+            selfTransform->width = lastX;
         if (!layout->NoAutoSizeX)
             selfTransform->height = greatestY - selfTransform->y + layout->Padding.bottom;
     }

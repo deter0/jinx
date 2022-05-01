@@ -42,58 +42,53 @@ void eventHandlerStart(EventHandler *eh) {
         gettimeofday(&last, NULL);
         while (running) {
             gettimeofday(&curr, NULL);
-            double deltaUsec = (curr.tv_usec - last.tv_usec) / (double)1000;
+            // double deltaUsec = (curr.tv_usec - last.tv_usec) / (double)1000;
             gettimeofday(&last, NULL);
-            eh->update(eh, deltaUsec);
-            if (eh->update == NULL) {
-                XNextEvent(window.display, &event);
-            } else {
-                if (XPending(window.display)) {
-                    XNextEvent(window.display, &event);
-                } else {
-                    usleep(1600);
-                }
-            }
-            // if (XPending(window.display)) {
-
-                switch (event.type) {
-                    case Expose:
-                        XGetWindowAttributes(window.display,
-                            window.window,
-                            window.attributes);
-                        eh->render(eh);
-                        break;
-                    case MotionNotify:
-                        eh->mouseX = (float)event.xmotion.x;
-                        eh->mouseY = (float)event.xmotion.y;
-                        eh->mouseMove(eh, eh->mouseX, eh->mouseY);
-                        break;
-                    case ButtonPressMask:
-                        switch (event.xbutton.button) {
-                            case 1:
-                                eh->click(eh, (float)event.xbutton.x, (float)event.xbutton.y);
-                                break;
-                            case 3:
-                                eh->rightClick(eh, (float)event.xbutton.x, (float)event.xbutton.y);
-                                break;
-                            default:
-                                fprintf(stderr, "Unhandled click: %d\n", event.xbutton.button);
-                        }
-                        break;
-                    case KeyPress:
-                        eh->keyPress(eh, event.xkey.keycode);
-                        break;
-                    case ClientMessage:
-                        if ((Atom)(event.xclient.data.l[0]) == deleteWindow) {
-                            running = false;
-                        }
-                        break;
-                    default:
-                        break;
-                }
+            // eh->update(eh, deltaUsec);
+            XNextEvent(window.display, &event);
+            // if (eh->update == NULL) {
             // } else {
-            //     usleep(16000);
+            //     if (XPending(window.display)) {
+            //         XNextEvent(window.display, &event);
+            //     } else {
+            //         usleep(1600);
+            //     }
             // }
+            switch (event.type) {
+                case Expose:
+                    XGetWindowAttributes(window.display,
+                        window.window,
+                        window.attributes);
+                    eh->render(eh);
+                    break;
+                case MotionNotify:
+                    eh->mouseX = (float)event.xmotion.x;
+                    eh->mouseY = (float)event.xmotion.y;
+                    eh->mouseMove(eh, eh->mouseX, eh->mouseY);
+                    break;
+                case ButtonPressMask:
+                    switch (event.xbutton.button) {
+                        case 1:
+                            eh->click(eh, (float)event.xbutton.x, (float)event.xbutton.y);
+                            break;
+                        case 3:
+                            eh->rightClick(eh, (float)event.xbutton.x, (float)event.xbutton.y);
+                            break;
+                        default:
+                            fprintf(stderr, "Unhandled click: %d\n", event.xbutton.button);
+                    }
+                    break;
+                case KeyPress:
+                    eh->keyPress(eh, event.xkey.keycode);
+                    break;
+                case ClientMessage:
+                    if ((Atom)(event.xclient.data.l[0]) == deleteWindow) {
+                        running = false;
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
         eh->quit(eh);
     } else {
