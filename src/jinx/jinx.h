@@ -8,4 +8,7 @@
 #include "core/jid.h"
 #include "core/layouts.h"
 #include "core/events.h"
+#include "jinxst/jinxst.h"
+#include "jinxst/log.h"
+#include "slurp.h"
 // #include "core/tooltip.h"

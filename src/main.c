@@ -14,6 +14,7 @@
 #include "src/jinx/core/jid.h"
 #include "src/jinx/core/renderer.h"
 #include "src/jinx/eventHandler.h"
+#include "src/jinx/slurp.h"
 
 #define X11
 
@@ -54,6 +55,12 @@ int main(void) {
 #ifndef X11
     assert(false && "Not Implemented");
     exit(1);
+#endif
+    char *defaultJinxstSrc = jinxSlurpFile("../defaults/default.jinxst");
+    assert(defaultJinxstSrc != NULL);
+    jinxst(defaultJinxstSrc);
+#if 1
+    exit(0);
 #endif
     root = JIDRoot(800, 800); 
 

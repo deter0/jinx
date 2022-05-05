@@ -9,4 +9,8 @@
 #include "core/renderFunctions.c"
 #include "core/layouts.c"
 #include "core/events.c"
+#include "jinxst/reader.c"
+#include "jinxst/jinxst.c"
+#include "jinxst/log.c"
+#include "jinxst/tokenizer.c"
 // #include "core/tooltip.c"
