@@ -27,3 +27,4 @@ typedef struct X11Window {
 } X11Window;
 
 X11Window createWindow(unsigned int width, unsigned int height);
+// X11Window createTooltip(unsigned int width, unsigned int height);

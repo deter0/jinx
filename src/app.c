@@ -1,4 +1,5 @@
 #include "jinx/jinx.h"
+#include "src/jinx/core/helpers.h"
 #include "src/jinx/core/jid.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,10 +16,14 @@ void onClick(JID *self, float x, float y, EventHandler *eh) {
     (void)y;
     (void)self;
     count++;
-    char message[50];
+    char *message = malloc(50);
     sprintf(message, "Clicked %d times!", count);
+    printf("%s\n", message);
     ComponentTextRenderer *tren = (ComponentTextRenderer*)getComponentHard(self, "ComponentTextRenderer", NULL);
+    if (count > 1)
+        free(tren->Text);
     tren->Text = message;
+    // tren->Text = message;
     eh->render(eh);
 }
 
@@ -39,19 +44,18 @@ void app(JID *root) {
     ComponentEventHandler *ceh = (ComponentEventHandler*)getComponentHard(button, "ComponentEventHandler", NULL);
     ceh->onClick = onClick;
 
-    JID *tracker = JIDText(0, 0, "Clicked 0 times");
-
-    JIDSetFGColor(tracker, (RGBA){
-        .r = 1,
-        .g = 1,
-        .b = 1,
-        .a = 0.8
-    });
-    JIDSetParent(tracker, root);
     JIDSetParent(button, root);
 
     JIDSetParent(JIDText(0, 0, "Nested layout test"), root);
     JID *rect = JIDRectangle(0, 0, 100, 100);
+    ((ComponentRectangleRenderer*)getComponentHard(rect, "ComponentRectangleRenderer", NULL))
+        ->BorderRadius = 6;
+    JIDSetBGColor(rect, (RGBA){
+        .r = 46 / 255.0,
+        .g = 46 / 255.0,
+        .b = 46 / 255.0,
+        .a = 1.0
+    });
 
     ComponentHBoxLayout *hlayout = componentHBoxLayout(15, (Padding){
         .top = 12,
