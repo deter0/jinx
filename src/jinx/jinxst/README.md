@@ -15,7 +15,7 @@ global_light { /* This is a namespace or group */
 }
 
 global_dark | global_light { /* This is a namespace that inherits from global-light */
-    !$background-color = #000000FF;
+    !$background_color = #000000FF;
     /* Note prefix `!` indicates overriding the value from the name space it is inheriting from. The variable will also inherit it's type. */
 }
 ```
@@ -26,6 +26,8 @@ Possible formats are:
 * #RRGGBBAA
 * #RRGGBB
 * rgb(R, G, B)
-* rgba(R, G, B)
+* rgba(R, G, B, A)
+
+Where R, G, B, A are floating point numbers (0.0 - 1.0)
 
 Keywords such as `green`, `red`, `white`, etc. are currently unsupported.
