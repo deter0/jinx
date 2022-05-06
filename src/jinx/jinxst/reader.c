@@ -42,9 +42,9 @@ int get_split_data(char character) {
 		case '%':
 		case '^':
 		case '&':
+		case ':':
 		case '(':
 		case ')':
-		case '#':
 		case '.':
 		case '?':
 		case '\n':
@@ -85,6 +85,7 @@ size_t get_line(char *string, size_t index) {
 	return count;
 }
 
+// !! Be sure to free result
 char *get_value(read_result *read) {
 	char *buffer = (char *)malloc(sizeof(char) * (read->length + 1));
 	assert(buffer != NULL && "error allocating string.");
@@ -206,6 +207,7 @@ read_result_pool *read_string(char *string) {
 		} else {
 			printf("TOKEN: `%s`\n", val);
 		}
+        free(val);
 	}
 	printf("%ld\n", pool_fixed->length);
 #endif

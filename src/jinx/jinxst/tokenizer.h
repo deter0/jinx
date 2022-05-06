@@ -16,8 +16,8 @@ typedef enum TokenType {
 	TOKEN_CHAR, //
 	TOKEN_TYPE_VOID, //
 	TOKEN_TYPE_STRING,
-	TOKEN_TYPE_CHAR,
-	TOKEN_TYPE_INT, //
+	TOKEN_TYPE_NUMBER, //
+	TOKEN_TYPE_COLOR,
 	TOKEN_OPEN_SCOPE, //
 	TOKEN_CLOSE_SCOPE, //
 	TOKEN_OPEN_PAREN, //
@@ -37,6 +37,8 @@ typedef enum TokenType {
 	TOKEN_COMPARE, //
     TOKEN_VARIABLE,
     TOKEN_OVERRIDE,
+    TOKEN_INHERIT,
+	TOKEN_TYPE_ASSIGN,
 } TokenType;
 
 const char *TOKEN_STRINGS[100] = {
@@ -45,11 +47,11 @@ const char *TOKEN_STRINGS[100] = {
 	"TOKEN_SEMICOLON", //
 	"TOKEN_KEYWORD_RETURN", //
 	"TOKEN_STRING_LITERAL", //
-	"TOKEN_TYPE_CHAR", //
+	"TOKEN_CHAR", //
 	"TOKEN_TYPE_VOID", //
 	"TOKEN_TYPE_STRING",
-	"TOKEN_TYPE_CHAR",
-	"TOKEN_TYPE_INT", //
+	"TOKEN_TYPE_NUMBER", //
+	"TOKEN_TYPE_COLOR",
 	"TOKEN_OPEN_SCOPE", //
 	"TOKEN_CLOSE_SCOPE", //
 	"TOKEN_OPEN_PAREN", //
@@ -66,9 +68,11 @@ const char *TOKEN_STRINGS[100] = {
 	"TOKEN_COMMENT",
     "TOKEN_CLOSE_COMMENT",
 	"TOKEN_EOF",
-	"TOKEN_COMPARE",
+	"TOKEN_COMPARE", //
     "TOKEN_VARIABLE",
     "TOKEN_OVERRIDE",
+    "TOKEN_INHERIT",
+	"TOKEN_TYPE_ASSIGN",
 };
 
 typedef struct Token {
@@ -80,6 +84,7 @@ typedef struct TokenPool {
 	size_t Allocated;
 	size_t Length;
 	Token **Tokens;
+	char *src;
 } TokenPool;
 
 typedef struct TokenPool2D {
@@ -98,4 +103,5 @@ void logTokenPool2D(FILE *fd, TokenPool2D *self);
 
 TokenPool2D *tokenPoolSplit(TokenPool *pool, TokenType Delimeter);
 
-TokenPool *Tokenize(read_result_pool *parsed);
+TokenPool *Tokenize(read_result_pool *parsed, char *src);
+char *trim(char *s);

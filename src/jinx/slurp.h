@@ -43,6 +43,7 @@ char *jinxSlurpFile(char *path) {
         fclose(fp);
         return NULL;
     }
+    buffer[fileSize] = '\0';
     fclose(fp);
     return buffer;
 }

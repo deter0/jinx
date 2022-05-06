@@ -40,6 +40,7 @@ void logTokenPool(FILE *fd, TokenPool *self) {
 			TOKEN_STRINGS[self->Tokens[i]->Type], TERM_DEFAULT(), TERM_GREEN(),
 			get_value(self->Tokens[i]->ReadResult), TERM_DEFAULT()
 		);
+		free(val);
 	}
 	fprintf(fd, "%s}\n", indent);
 }
@@ -104,13 +105,14 @@ static char *rtrim(char *s) {
     return s;
 }
 
-static char *trim(char *s) {
+char *trim(char *s) {
     return rtrim(ltrim(s)); 
 }
 
-TokenPool *Tokenize(read_result_pool *parsed) {
+TokenPool *Tokenize(read_result_pool *parsed, char *src) {
 	TokenPool *tokenPool = (TokenPool*)chp(calloc(1, sizeof(TokenPool)));
 	tokenPool->Allocated = 200;
+	tokenPool->src = src;
 	tokenPool->Tokens = (Token**)chp(calloc(1, sizeof(Token) * tokenPool->Allocated));
 	tokenPool->Length = 0;
 	
@@ -120,10 +122,12 @@ TokenPool *Tokenize(read_result_pool *parsed) {
 		tkn->Type = TOKEN_UNDEFINED;
 		if (!strcmp("return", val)) {
 			tkn->Type = TOKEN_KEYWORD_RETURN;
-		} else if (!strcmp("int", val)) {
-			tkn->Type = TOKEN_TYPE_INT;
+		} else if (!strcmp("number", val)) {
+			tkn->Type = TOKEN_TYPE_NUMBER;
 		} else if (!strcmp("void", val)) {
 			tkn->Type = TOKEN_TYPE_VOID;
+		} else if (!strcmp("color", val)) {
+			tkn->Type = TOKEN_TYPE_COLOR;
 		} else if (val[0] == '"' && val[strlen(val)-1] == '"') {
 			tkn->Type = TOKEN_STRING_LITERAL;
 		} else if (val[0] == '\'' && val[strlen(val)-1] == '\'') {
@@ -148,6 +152,7 @@ TokenPool *Tokenize(read_result_pool *parsed) {
 				} else {
 					tkn->Type = TOKEN_OP_EQ;
 				}
+				free(next);
 			}
 			tkn->Type = TOKEN_OP_EQ;
 		} else if (!strcmp("-", val)) {
@@ -162,6 +167,7 @@ TokenPool *Tokenize(read_result_pool *parsed) {
 					parsed->results[i]->length++;
 					i++;
 				}
+				free(next);
 			} else {
 				tkn->Type = TOKEN_OP_MUL;
 			}
@@ -173,6 +179,7 @@ TokenPool *Tokenize(read_result_pool *parsed) {
 					parsed->results[i]->length++;
 					i++;
 				}
+				free(next);
 			} else {
 				tkn->Type = TOKEN_OP_DIV;
 			}
@@ -186,13 +193,19 @@ TokenPool *Tokenize(read_result_pool *parsed) {
 			tkn->Type = TOKEN_VARIABLE;
 		} else if (!strcmp("!", val)) {
 			tkn->Type = TOKEN_OVERRIDE;
+		} else if (!strcmp("|", val)) { // TODO: OR syntax
+			tkn->Type = TOKEN_INHERIT;
+		} else if (!strcmp(":", val)) {
+			tkn->Type = TOKEN_TYPE_ASSIGN;
 		} else {
 			if (strcmp(trim(val), "")) {
 				tkn->Type = TOKEN_WORD;
 			}
 		}
+		free(val);
 		tkn->ReadResult = parsed->results[i];
 		if (tkn->Type != TOKEN_UNDEFINED) {
+			// FIXMEEEE: Bug in comments
 			if (tokenPool->Length > 0 && tokenPool->Tokens[tokenPool->Length - 1]->Type == TOKEN_COMMENT && tkn->Type != TOKEN_CLOSE_COMMENT) {
 				free(tkn);
 				continue;

@@ -11,11 +11,11 @@ Dashes in names are **not** allowed.
 ```css
 /* This is a comment */
 global_light { /* This is a namespace or group */
-    $background-color: color = #FFFFFFFF; /* $VARIABLE_NAME: VARIABLE_TYPE = VARIABLE_VALUE */
+    $background_color: color = #FFFFFFFF; /* $VARIABLE_NAME: VARIABLE_TYPE = VARIABLE_VALUE */
 }
 
 global_dark | global_light { /* This is a namespace that inherits from global-light */
-    !$background_color = #000000FF;
+    $background_color != #000000FF;
     /* Note prefix `!` indicates overriding the value from the name space it is inheriting from. The variable will also inherit it's type. */
 }
 ```
