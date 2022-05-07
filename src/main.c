@@ -16,6 +16,8 @@
 #include "src/jinx/eventHandler.h"
 #include "src/jinx/slurp.h"
 
+#define PROF
+
 #define X11
 
 __attribute__((noreturn)) static void quitWindow(EventHandler *eh) {
@@ -56,7 +58,7 @@ int main(void) {
     assert(false && "Not Implemented");
     exit(1);
 #endif
-#if 1
+#if 0
     char *defaultJinxstSrc = jinxSlurpFile("../defaults/default.jinxst");
     assert(defaultJinxstSrc != NULL);
     jinxst(defaultJinxstSrc);

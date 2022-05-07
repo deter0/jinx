@@ -66,8 +66,21 @@ void app(JID *root) {
     JIDAddComp(rect, (JIDComponent *)hlayout);
     // char buttonText[25];
     for (int i = 0; i < 5; i++) {
-        JID *button = JIDTextButton(0, 0, "+Button");
-        JIDSetParent(button, rect);
+        // JID *button = JIDTextButton(0, 0, "+Button");
+        JID *rect2 = JIDRectangle(0, 0, 0, 0);
+        ComponentVBoxLayout *vlayout = componentVBoxLayout(5, (Padding){
+            .top = 5,
+            .left = 5,
+            .right = 5,
+            .bottom = 5
+        });
+        // JIDSetParent(button, rect);
+        JIDAddComp(rect2, (JIDComponent*)vlayout);
+        for (int i = 0; i < 5; i++) {
+            JID *button2 = JIDTextButton(0, 0, "Button LLOL!");
+            JIDSetParent(button2, rect2);
+        }
+        JIDSetParent(rect2, rect);
     }
     JID *increaseSpacing = JIDTextButton(0, 0, "+Spacing");
     ((ComponentEventHandler*)getComponentHard(increaseSpacing, "ComponentEventHandler", NULL))->onClick = increaseSpacingFunc;
