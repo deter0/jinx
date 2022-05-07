@@ -37,7 +37,12 @@ int findTokenOfType(TokenPool *pool, size_t from, TokenType type) {
 
 #define MAX_INHERITS 20
 
-char *get_line_str(char *src, size_t line) {
+struct lineStr {
+    char *lineStr;
+    size_t index;
+};
+
+int get_line_str(char *src, size_t line, struct lineStr *out) {
     size_t counted = 0;
     for (size_t k = 0; k < strlen(src); k++) {
         if (src[k] == '\n') {
@@ -58,20 +63,27 @@ char *get_line_str(char *src, size_t line) {
                 for (size_t j = k + 1; j < end; j++) {
                     buffer[j - (k + 1)] = src[j];
                 }
-                return trim(buffer);
+                out->lineStr = trim(buffer);
+                out->index = end;
+                return 0;
             }
         }
     }
-    return NULL;
+    return 1;
 }
 
-char *errorLineInfo() {
+static char *debugInfo() {
     size_t index = (size_t)current->ReadResult->ptr_start - (size_t)pool->src;
     size_t line = get_line(pool->src, index);
-    char *lineStr = get_line_str(pool->src, line);
-    char *out = malloc(strlen(lineStr) + 50);
-    out[strlen(lineStr) + 50] = '\0';
-    sprintf(out, "Line %zu: %s`%s`%s\n", line, TERM_RED(), lineStr, TERM_DEFAULT());
+
+    struct lineStr data = {0};
+    int status = get_line_str(pool->src, line, &data);
+    assert(status != 1);
+
+    char *out = malloc(strlen(data.lineStr) + 50);
+    out[strlen(data.lineStr) + 50] = '\0';
+    sprintf(out, "Line %zu: %s`%s`%s", line, TERM_RED(), data.lineStr, TERM_DEFAULT());
+    // free(data);
     return out;
 }
 
@@ -112,7 +124,7 @@ void jinxst(char *jinxstSrc) {
                                 if (inheritCount > MAX_INHERITS) {
                                     set_error_cat("[JINXST]");
                                     fprintf(stderr, "Max inherits (%d) surpassed for namespace `%s`\n", MAX_INHERITS, nameSpaceName);
-                                    fprintf(stderr, "\t%s", errorLineInfo());
+                                    fprintf(stderr, "\t%s\n", debugInfo());
                                     panic(true);
                                 }
                             } else {
@@ -142,14 +154,14 @@ void jinxst(char *jinxstSrc) {
                             if (current->Type != TOKEN_WORD) {
                                 set_error_cat("[JINXST]");
                                 fprintf(stderr, "Variable name expected after `$` got <%s>`%s`\n", TOKEN_STRINGS[current->Type], variableName);
-                                fprintf(stderr, "\t%s", errorLineInfo());
+                                fprintf(stderr, "\t%s\n", debugInfo());
                                 panic(true);
                             }
                             int eqIndex = findTokenOfType(pool, i, TOKEN_OP_EQ);
                             if (eqIndex == -1) {
                                 set_error_cat("[JINXST]");
                                 fprintf(stderr, "Jinxst variables cannot be uninitalized no `=` found for variable `%s`\n", variableName);
-                                fprintf(stderr, "\t%s", errorLineInfo());
+                                fprintf(stderr, "\t%s\n", debugInfo());
                                 panic(true);
                             }
                             bool override = false;
@@ -166,7 +178,7 @@ void jinxst(char *jinxstSrc) {
                                     } else {
                                         set_error_cat("[JINXST]");
                                         fprintf(stderr, "Type expected after `:` for variable `%s` got <%s>`%s`\n", variableName, TOKEN_STRINGS[current->Type], get_value(current->ReadResult));
-                                        fprintf(stderr, "\t%s", errorLineInfo());
+                                        fprintf(stderr, "\t%s\n", debugInfo());
                                         panic(true);
                                     }
                                 } else if (current->Type == TOKEN_OVERRIDE) {
@@ -175,14 +187,26 @@ void jinxst(char *jinxstSrc) {
                                     break;
                                 } else {
                                     set_error_cat("[JINXST]");
-                                    fprintf(stderr, "Unexpected token: <%s>`%s`\n\t%s", TOKEN_STRINGS[current->Type], get_value(current->ReadResult), errorLineInfo());
-                                    // errorLineInfo();
+                                    fprintf(stderr, "Unexpected token: <%s>`%s`\n\t%s", TOKEN_STRINGS[current->Type], get_value(current->ReadResult), debugInfo());
+                                    // debugInfo(); // ! TODO
                                     panic(true);
                                 }
                             }
-                            // printf("Current: %s\n", get_value(current->ReadResult));
+                            assert(current->Type == TOKEN_OP_EQ);
+                            NEXT_TOKEN();
+                            printf("Current: <%s>%s\n", TOKEN_STRINGS[current->Type], get_value(current->ReadResult));
                             printf("\tVariable: %s, Type: %s, Override: %d\n", variableName, type, override);
-                            // free(variableName);
+                            if (type != NULL) {
+                                if (!strcmp(type, "color")) {
+                                    
+                                } else {
+                                    set_error_cat("[JINXST]");
+                                    fprintf(stderr, "Unknown type variable(%s) type: `%s`\n", variableName, type);
+                                    fprintf(stderr, "\t%s\n", debugInfo());
+                                    panic(true);
+                                }
+                            }
+                            // free(variableName); 
                         }
                         NEXT_TOKEN();
                         PANIC_IF_END();

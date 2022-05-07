@@ -1,5 +1,5 @@
 global {
-    $background_color: color = #FFFFFFFF;
+    $background_color: color = #FFFFFF;
 }
 
 global_dark | global {

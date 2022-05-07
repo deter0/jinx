@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 typedef enum TokenType {
-	TOKEN_UNDEFINED, //
+	TOKEN_UNDEFINED = 0, //
 	TOKEN_NEW_LINE, //
 	TOKEN_SEMICOLON, //
 	TOKEN_KEYWORD_RETURN, //
@@ -39,6 +39,7 @@ typedef enum TokenType {
     TOKEN_OVERRIDE,
     TOKEN_INHERIT,
 	TOKEN_TYPE_ASSIGN,
+	TOKEN_COLOR
 } TokenType;
 
 const char *TOKEN_STRINGS[100] = {
@@ -73,6 +74,7 @@ const char *TOKEN_STRINGS[100] = {
     "TOKEN_OVERRIDE",
     "TOKEN_INHERIT",
 	"TOKEN_TYPE_ASSIGN",
+	"TOKEN_COLOR"
 };
 
 typedef struct Token {

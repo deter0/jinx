@@ -7,6 +7,8 @@
 #include "tokenizer.h"
 #include "reader.h"
 
+#include <assert.h>
+#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include "log.h"
@@ -109,6 +111,56 @@ char *trim(char *s) {
     return rtrim(ltrim(s)); 
 }
 
+char *getDebugInfo(Token *current, TokenPool *pool) {
+	size_t index = (size_t)current->ReadResult->ptr_start - (size_t)pool->src;
+    size_t line = get_line(pool->src, index);
+    char *out = malloc(50);
+    sprintf(out, "**Line %zu**, could not produce more debug data sorry :(", line);
+    return out;
+}
+
+struct Color {
+	int r;
+	int g;
+	int b;
+	int a;
+};
+
+int parseColorHex(char *val, Token *tkn, TokenPool *tokenPool, struct Color *out) {
+	char *colorVal = val + 1;
+	size_t elements = strlen(colorVal);
+	if (elements == 8 || elements == 6) {
+		int r = 0, g = 0, b = 0, a = 255;
+		bool failed = false;
+		if (elements == 8) {
+			failed = sscanf(colorVal, "%02x%02x%02x%02x", &r, &g, &b, &a) != 4;
+		} else if (elements == 6) {
+			failed = sscanf(colorVal, "%02x%02x%02x", &r, &g, &b) != 3;
+		}
+		if (failed) {
+			set_error_cat("[JINXST (Tokenizer)]");
+			fprintf(stderr, "Validation of parse for color: `%s` failed.\n", val);
+			if (tkn != NULL && tokenPool != NULL) {
+				fprintf(stderr, "\t%s\n", getDebugInfo(tkn, tokenPool));
+			} else {
+				fprintf(stderr, "\tCould not print any debugging information :(\n");
+			}
+			panic(true);
+		}
+		assert(!failed);
+		out->r = r;
+		out->g = g;
+		out->b = b;
+		out->a = a;
+		return 0;
+	} else {
+		set_error_cat("[JINXST (Tokenizer)]");
+		fprintf(stderr, "Error parsing color value: `%s` Expected 8 or 6 data elements got %zu\n", val, elements);
+		panic(true);
+	}
+	return 1;
+}
+
 TokenPool *Tokenize(read_result_pool *parsed, char *src) {
 	TokenPool *tokenPool = (TokenPool*)chp(calloc(1, sizeof(TokenPool)));
 	tokenPool->Allocated = 200;
@@ -120,6 +172,7 @@ TokenPool *Tokenize(read_result_pool *parsed, char *src) {
 		char *val = get_value(parsed->results[i]);
 		Token *tkn = (Token*)chp(malloc(sizeof(Token)));
 		tkn->Type = TOKEN_UNDEFINED;
+		tkn->ReadResult = parsed->results[i];
 		if (!strcmp("return", val)) {
 			tkn->Type = TOKEN_KEYWORD_RETURN;
 		} else if (!strcmp("number", val)) {
@@ -197,13 +250,24 @@ TokenPool *Tokenize(read_result_pool *parsed, char *src) {
 			tkn->Type = TOKEN_INHERIT;
 		} else if (!strcmp(":", val)) {
 			tkn->Type = TOKEN_TYPE_ASSIGN;
+		} else if (val[0] == '#') { // COLOR
+			struct Color valid = {0};
+			int status = parseColorHex(val, tkn, tokenPool, &valid);
+			if (status != 1) {
+				printf("Parsed color: %d, %d, %d\n", valid.r, valid.g, valid.b);
+				tkn->Type = TOKEN_COLOR;
+			} else {
+				set_error_cat("[JINXST (Tokenizer)]");
+				fprintf(stderr, "Failed to parse color/ unreachable because we should've errored before.\n");
+				panic(true);
+			}
 		} else {
 			if (strcmp(trim(val), "")) {
 				tkn->Type = TOKEN_WORD;
 			}
 		}
 		free(val);
-		tkn->ReadResult = parsed->results[i];
+		// tkn->ReadResult = parsed->results[i];
 		if (tkn->Type != TOKEN_UNDEFINED) {
 			// FIXMEEEE: Bug in comments
 			if (tokenPool->Length > 0 && tokenPool->Tokens[tokenPool->Length - 1]->Type == TOKEN_COMMENT && tkn->Type != TOKEN_CLOSE_COMMENT) {

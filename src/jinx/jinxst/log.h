@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 const char *TERM_RED();
+const char *TERM_UNDERLINE(); 
 const char *TERM_GREEN(); 
 const char *TERM_BLUE();
 const char *TERM_CYAN();

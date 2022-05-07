@@ -45,6 +45,11 @@ const char *TERM_RED() {
                 return "";
         return "\033[0;31m";
 }
+const char *TERM_UNDERLINE() {
+        if (!isatty(1))
+                return "";
+        return "\033[4m";
+}
 const char *TERM_GREEN() {
         if (!isatty(1))
                 return "";
