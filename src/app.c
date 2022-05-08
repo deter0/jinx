@@ -27,6 +27,10 @@ void onClick(JID *self, float x, float y, EventHandler *eh) {
     eh->render(eh);
 }
 
+void onMouseUp() {
+    printf("UP!\n");
+}
+
 void app(JID *root) {
     ComponentVBoxLayout *layout = componentVBoxLayout(15, (Padding){
         .top = 12,
@@ -84,6 +88,7 @@ void app(JID *root) {
     }
     JID *increaseSpacing = JIDTextButton(0, 0, "+Spacing");
     ((ComponentEventHandler*)getComponentHard(increaseSpacing, "ComponentEventHandler", NULL))->onClick = increaseSpacingFunc;
+    // ((ComponentEventHandler*)getComponentHard(increaseSpacing, "ComponentEventHandler", NULL))->onClickUp = onMouseUp;
     JIDSetParent(increaseSpacing, rect);
     JIDSetParent(rect, root);
 }

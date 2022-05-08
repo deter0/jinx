@@ -52,13 +52,16 @@ static void mouseMove(EventHandler *eh, float x, float y) {
 static void forwardClick(EventHandler *eh, float x, float y) {
     JIDOnMouseClick(root, x, y, eh);
 }
+static void forwardClickUp(EventHandler *eh, float x, float y) {
+    JIDOnMouseClickUp(root, x, y, eh);
+}
 
 int main(void) {
 #ifndef X11
     assert(false && "Not Implemented");
     exit(1);
 #endif
-#if 1
+#if 0
     char *defaultJinxstSrc = jinxSlurpFile("../defaults/default.jinxst");
     assert(defaultJinxstSrc != NULL);
     jinxst(defaultJinxstSrc);
@@ -79,6 +82,7 @@ int main(void) {
     eh.keyPress = keyPress;
     eh.render = render;
     eh.mouseMove = mouseMove;
+    eh.clickUp = forwardClickUp;
     eh.click = forwardClick;
 
     app(root);

@@ -154,7 +154,11 @@ void ComponentColorFree(ComponentColor *color);
 // Extends `JIDComponent`
 typedef struct ComponentEventHandler {
     ExtendJIDComponent;
+    // General click function
     void (*onClick)(JID *self, float x, float y, EventHandler *eh);
+    // More specific click functions
+    void (*onClickUp)(JID *self, float x, float y, EventHandler *eh);
+
     void (*onMouseEnter)(JID *self, float x, float y, EventHandler *eh);
     void (*onMouseLeave)(JID *self, float x, float y, EventHandler *eh);
 } ComponentEventHandler;
