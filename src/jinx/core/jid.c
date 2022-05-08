@@ -248,6 +248,7 @@ JID *JIDTextButton(float x, float y, char *text) {
 
 JID *currentDrag;
 static float startX;
+static float initalX;
 static bool dragging = false;
 static size_t sliderMouseMoveIndex = 0;
 static size_t sliderMouseUpIndex = 0;
@@ -263,7 +264,8 @@ static void sliderMouseMove(EventHandler *eh, float x, float y) {
         ComponentTransform *parentTransform = (ComponentTransform*)getComponentHard(currentDrag->Parent, "ComponentTransform", NULL);
 
         float realWidth = parentTransform->width - DRAGGER_SIZE;
-        rt->x = delta < 0 ? 0 : (delta > realWidth ? realWidth : delta);
+        rt->x = initalX + delta;
+        rt->x = (rt->x < 0 ? 0 : (rt->x > realWidth ? realWidth : rt->x));
         eh->render(eh);
     } else {
         printf("Done!!\n");
@@ -275,7 +277,10 @@ static void sliderMouseUp(EventHandler *eh, float x, float y) {
     (void)eh;
     (void)x;
     (void)y;
+    ComponentRelativeTransform *rt = (ComponentRelativeTransform*)getComponentHard(currentDrag, "ComponentRelativeTransform", NULL);
+    initalX = rt->x;
     dragging = false;
+    startX = 0;
 }
 
 static void sliderMouseDown(JID *self, float x, float y, EventHandler *eh) {
