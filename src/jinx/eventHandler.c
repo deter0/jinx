@@ -25,9 +25,59 @@ EventHandler eventHandler(X11Window *xWindow, void *userData) {
         .render = defaultRender,
         .update = defaultUpdate,
         .click = defaultClickHandler,
+        .clickUp = defaultClickHandler,
         .rightClick = defaultClickHandler,
-        .mouseMove = defaultClickHandler
+        .rightClickUp = defaultClickHandler,
+        .mouseMove = defaultClickHandler,
+
+        .mouseMoveConnections = {0},
+        .mouseMoveConnectionsCount = 0,
+
+        .mouseUpConnections = {0},
+        .mouseUpConnectionsCount = 0
     };
+}
+
+/**
+    * adds a connection to mouse move
+    *
+    * @return - Returns index so you can disconnect this event later
+*/
+size_t eventHandlerConnectMouseMove(EventHandler *eh, void (*callback)(struct EventHandler *eh, float x, float y)) {
+    assert(callback != NULL);
+    assert(eh->mouseMoveConnectionsCount < MAX_CONNECTIONS); // TODO: Error info
+    eh->mouseMoveConnections[eh->mouseMoveConnectionsCount] = callback;
+    eh->mouseMoveConnectionsCount++;    
+    return eh->mouseMoveConnectionsCount - 1;
+}
+
+void eventHandlerDisconnectMouseMove(EventHandler *eh, size_t index) {
+    assert(eh->mouseMoveConnectionsCount >= index);
+    for (size_t i = index; i < eh->mouseMoveConnectionsCount - 1; eh++) {
+        eh->mouseMoveConnections[i] = eh->mouseMoveConnections[i + 1];
+    }
+    eh->mouseMoveConnectionsCount--;
+}
+
+/**
+    * adds a connection to mouse move
+    *
+    * @return - Returns index so you can disconnect this event later
+*/
+size_t eventHandlerConnectMouseUp(EventHandler *eh, void (*callback)(struct EventHandler *eh, float x, float y)) {
+    assert(callback != NULL);
+    assert(eh->mouseUpConnectionsCount < MAX_CONNECTIONS); // TODO: Error info
+    eh->mouseUpConnections[eh->mouseUpConnectionsCount] = callback;
+    eh->mouseUpConnectionsCount++;    
+    return eh->mouseUpConnectionsCount - 1;
+}
+
+void eventHandlerDisconnectMouseUp(EventHandler *eh, size_t index) {
+    assert(eh->mouseUpConnectionsCount >= index);
+    for (size_t i = index; i < eh->mouseUpConnectionsCount - 1; eh++) {
+        eh->mouseUpConnections[i] = eh->mouseUpConnections[i + 1];
+    }
+    eh->mouseUpConnectionsCount--;
 }
 
 void eventHandlerStart(EventHandler *eh) {
@@ -56,17 +106,40 @@ void eventHandlerStart(EventHandler *eh) {
             // }
             switch (event.type) {
                 case Expose:
-                    XGetWindowAttributes(window.display,
-                        window.window,
-                        window.attributes);
-                    eh->render(eh);
+                    if (event.xexpose.count == 0) {
+                        XGetWindowAttributes(window.display,
+                            window.window,
+                            window.attributes);
+                        eh->render(eh);
+                    }
                     break;
                 case MotionNotify:
                     eh->mouseX = (float)event.xmotion.x;
                     eh->mouseY = (float)event.xmotion.y;
                     eh->mouseMove(eh, eh->mouseX, eh->mouseY);
+                    for (size_t i = 0; i < eh->mouseMoveConnectionsCount; i++) {
+                        if (eh->mouseMoveConnections[i] != NULL)
+                            eh->mouseMoveConnections[i](eh, event.xmotion.x, event.xmotion.y);
+                    }
+                    break;
+                case ButtonRelease:
+                    switch (event.xbutton.button) {
+                        case 1:
+                            eh->clickUp(eh, (float)event.xbutton.x, (float)event.xbutton.y);
+                            break;
+                        case 3:
+                            eh->rightClickUp(eh, (float)event.xbutton.x, (float)event.xbutton.y);
+                            break;
+                        default:
+                            fprintf(stderr, "Unhandled click (up): %d\n", event.xbutton.button);
+                    }
+                    for (size_t i = 0; i < eh->mouseUpConnectionsCount; i++) {
+                        if (eh->mouseUpConnections[i] != NULL)
+                            eh->mouseUpConnections[i](eh, event.xbutton.x, event.xbutton.y);
+                    }
                     break;
                 case ButtonPressMask:
+                    // printf("%d\n", event.xbutton.state);
                     switch (event.xbutton.button) {
                         case 1:
                             eh->click(eh, (float)event.xbutton.x, (float)event.xbutton.y);

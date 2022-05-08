@@ -42,6 +42,26 @@ typedef struct ComponentLayout {
     ExtendJIDLayoutComp;
 } ComponentLayout;
 
+// Extends `JIDComponent`
+typedef struct ComponentRelativeTransform {
+    ExtendJIDComponent;
+    float x;
+    float y;
+    float width;
+    float height;
+    float percentX;
+    float percentY;
+    float percentWidth;
+    float percentHeight;
+} ComponentRelativeTransform;
+
+// Extends `JIDComponent`
+typedef struct ComponentSlider {
+    ExtendJIDComponent;
+    float percentage; // Don't modify directly use `sliderSetPercentage(JID *jid, float percentage)`
+    bool draggable;
+} ComponentSlider;
+
 // Extends `ComponentLayout`
 typedef struct Padding {
     float top;
@@ -136,6 +156,8 @@ typedef struct ComponentTransform {
 } ComponentTransform;
 ComponentTransform *componentTransform(float x, float y, float w, float h);
 
+ComponentRelativeTransform *componentRelativeTransform(void);
+
 typedef struct RGBA {
     float r;
     float g;
@@ -154,7 +176,11 @@ void ComponentColorFree(ComponentColor *color);
 // Extends `JIDComponent`
 typedef struct ComponentEventHandler {
     ExtendJIDComponent;
+    // General click function
     void (*onClick)(JID *self, float x, float y, EventHandler *eh);
+    // More specific click functions
+    void (*onClickUp)(JID *self, float x, float y, EventHandler *eh);
+
     void (*onMouseEnter)(JID *self, float x, float y, EventHandler *eh);
     void (*onMouseLeave)(JID *self, float x, float y, EventHandler *eh);
 } ComponentEventHandler;
@@ -171,5 +197,6 @@ JID *JIDRoot(float width, float height);
 JID *JIDRectangle(float x, float y, float width, float height);
 JID *JIDText(float x, float y, char *text);
 JID *JIDTextButton(float x, float y, char *text);
+JID *JIDSlider(float x, float y, float w, float h);
 
 void JIDDestroy(JID *jid);

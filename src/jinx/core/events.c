@@ -1,6 +1,7 @@
 #include "jid.h"
 #include "../eventHandler.h"
 
+// FIXME: This function has some strange behaviour? check `JIDOnMouseClickUp`
 static void recurseFindTarget(JID *root, float x, float y, JID **currentTarget) {
     ComponentTransform *transform = (ComponentTransform*)getComponentSoft(root, "ComponentTransform", "JIDOnMouseMove");
     if (transform != NULL) {
@@ -48,6 +49,18 @@ void JIDOnMouseClick(JID *root, float x, float y, EventHandler *eh) {
                 ceh->onClick(target, x, y, eh);
                 eh->render(eh);
             }
+        }
+    }
+}
+
+void JIDOnMouseClickUp(JID *root, float x, float y, EventHandler *eh) {
+    (void)root;
+    JID *target = lastTarget; // Using workaround
+    // recurseFindTarget(root, x, y, &target); // HERE, seg faults at `getComponentSoft`
+    if (target != NULL) {
+        ComponentEventHandler *ceh = (ComponentEventHandler*)getComponentSoft(target, "ComponentEventHandler", NULL);
+        if (ceh != NULL && ceh->onClickUp != NULL) {
+            ceh->onClickUp(target, x, y, eh);
         }
     }
 }
