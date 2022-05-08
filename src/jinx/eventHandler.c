@@ -31,7 +31,10 @@ EventHandler eventHandler(X11Window *xWindow, void *userData) {
         .mouseMove = defaultClickHandler,
 
         .mouseMoveConnections = {0},
-        .mouseMoveConnectionsCount = 0
+        .mouseMoveConnectionsCount = 0,
+
+        .mouseUpConnections = {0},
+        .mouseUpConnectionsCount = 0
     };
 }
 
@@ -54,6 +57,27 @@ void eventHandlerDisconnectMouseMove(EventHandler *eh, size_t index) {
         eh->mouseMoveConnections[i] = eh->mouseMoveConnections[i + 1];
     }
     eh->mouseMoveConnectionsCount--;
+}
+
+/**
+    * adds a connection to mouse move
+    *
+    * @return - Returns index so you can disconnect this event later
+*/
+size_t eventHandlerConnectMouseUp(EventHandler *eh, void (*callback)(struct EventHandler *eh, float x, float y)) {
+    assert(callback != NULL);
+    assert(eh->mouseUpConnectionsCount < MAX_CONNECTIONS); // TODO: Error info
+    eh->mouseUpConnections[eh->mouseUpConnectionsCount] = callback;
+    eh->mouseUpConnectionsCount++;    
+    return eh->mouseUpConnectionsCount - 1;
+}
+
+void eventHandlerDisconnectMouseUp(EventHandler *eh, size_t index) {
+    assert(eh->mouseUpConnectionsCount >= index);
+    for (size_t i = index; i < eh->mouseUpConnectionsCount - 1; eh++) {
+        eh->mouseUpConnections[i] = eh->mouseUpConnections[i + 1];
+    }
+    eh->mouseUpConnectionsCount--;
 }
 
 void eventHandlerStart(EventHandler *eh) {
@@ -93,6 +117,10 @@ void eventHandlerStart(EventHandler *eh) {
                     eh->mouseX = (float)event.xmotion.x;
                     eh->mouseY = (float)event.xmotion.y;
                     eh->mouseMove(eh, eh->mouseX, eh->mouseY);
+                    for (size_t i = 0; i < eh->mouseMoveConnectionsCount; i++) {
+                        if (eh->mouseMoveConnections[i] != NULL)
+                            eh->mouseMoveConnections[i](eh, event.xmotion.x, event.xmotion.y);
+                    }
                     break;
                 case ButtonRelease:
                     switch (event.xbutton.button) {
@@ -104,6 +132,10 @@ void eventHandlerStart(EventHandler *eh) {
                             break;
                         default:
                             fprintf(stderr, "Unhandled click (up): %d\n", event.xbutton.button);
+                    }
+                    for (size_t i = 0; i < eh->mouseUpConnectionsCount; i++) {
+                        if (eh->mouseUpConnections[i] != NULL)
+                            eh->mouseUpConnections[i](eh, event.xbutton.x, event.xbutton.y);
                     }
                     break;
                 case ButtonPressMask:

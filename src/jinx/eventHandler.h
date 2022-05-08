@@ -21,6 +21,9 @@ typedef struct EventHandler {
     void (*mouseMoveConnections[MAX_CONNECTIONS])(struct EventHandler *eh, float x, float y);
     size_t mouseMoveConnectionsCount;
 
+    void (*mouseUpConnections[MAX_CONNECTIONS])(struct EventHandler *eh, float x, float y);
+    size_t mouseUpConnectionsCount;
+
     float mouseX;
     float mouseY;
 } EventHandler;
@@ -28,3 +31,9 @@ typedef struct EventHandler {
 void voidFn(void);
 EventHandler eventHandler(X11Window *xWindow, void *userData);
 void eventHandlerStart(EventHandler *eh);
+
+size_t eventHandlerConnectMouseMove(EventHandler *eh, void (*callback)(struct EventHandler *eh, float x, float y));
+void eventHandlerDisconnectMouseMove(EventHandler *eh, size_t index);
+
+size_t eventHandlerConnectMouseUp(EventHandler *eh, void (*callback)(struct EventHandler *eh, float x, float y));
+void eventHandlerDisconnectMouseUp(EventHandler *eh, size_t index);

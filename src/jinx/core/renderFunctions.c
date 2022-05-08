@@ -6,16 +6,50 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "renderFunctions.h"
 
 static void roundedRectangle(cairo_t *ctx, float x, float y, float w, float h, float corner_radius); // FWD
+
+// FIXME: Should this be here?
+static void applyTransformEffects(JID *jid, ComponentTransform *transform) {
+    assert(jid != NULL);
+    assert(transform != NULL);
+    ComponentRelativeTransform *rt = (ComponentRelativeTransform*)
+                                        getComponentSoft(jid, "ComponentRelativeTransform", NULL);
+    if (rt != NULL) {
+        if (jid->Parent != NULL) {
+            ComponentTransform *parentTransform = (ComponentTransform*)
+                getComponentSoft(jid->Parent, "ComponentTransform", NULL);
+            if (parentTransform != NULL) {
+                transform->x = parentTransform->x + rt->x;
+                transform->y = parentTransform->y + rt->y;
+                
+                transform->width = rt->width;
+                transform->height = rt->height;
+                
+                transform->x += (parentTransform->width * rt->percentX);
+                transform->y += (parentTransform->height * rt->percentY);
+                
+                transform->width += parentTransform->width * rt->percentWidth;
+                transform->height += parentTransform->height * rt->percentHeight;
+                // printf("Applied transform effects: %f, %f\n", transform->x, transform->y);
+            } else {
+                fprintf(stderr, "Relative transform on a jid, %s, who's parent doesn't have a transform component.\n", jid->JIDType);    
+            }
+        } else {
+            fprintf(stderr, "Relative transform on a jid, %s, without a parent.\n", jid->JIDType);
+        }
+    }
+}
 
 void renderRectangleRenderer(JID *jid, cairo_t *ctx) {
     ComponentTransform *transform = (ComponentTransform*)getComponentHard(
                                             jid,
                                             "ComponentTransform",
                                             "ComponentRectangleRenderer");
+    applyTransformEffects(jid, transform);
     ComponentRectangleRenderer *rect = (ComponentRectangleRenderer*)getComponentHard(
                                             jid, "ComponentRectangleRenderer", "ComponentRectangleRenderer");
     ComponentColor *color = (ComponentColor*)getComponentSoft(
@@ -34,7 +68,14 @@ void renderRectangleRenderer(JID *jid, cairo_t *ctx) {
         cairo_set_source_rgba(ctx, 1.0, 1.0, 1.0, 1.0);
     }
     if (rect->BorderRadius > 0.0) {
-        roundedRectangle(ctx, transform->x, transform->y, transform->width, transform->height, rect->BorderRadius);
+        float smallestAxis = (transform->width < transform->height ? transform->width : transform->height) / 2.0f;
+        roundedRectangle(
+            ctx, transform->x,
+            transform->y,
+            transform->width,
+            transform->height,
+            rect->BorderRadius > smallestAxis ? smallestAxis : rect->BorderRadius
+        );
     } else {
         cairo_rectangle(ctx, transform->x, transform->y, transform->width, transform->height);
     }
@@ -48,6 +89,7 @@ void renderTextRenderer(JID *jid, cairo_t *ctx) {
                                             jid,
                                             "ComponentTransform",
                                             "ComponentTextRenderer");
+    applyTransformEffects(jid, transform);
     ComponentColor *color = (ComponentColor*)getComponentSoft(
                                             jid,
                                             "ComponentColor",

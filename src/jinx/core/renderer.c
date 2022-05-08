@@ -10,8 +10,9 @@ static void findAlone(JID *jid, JID **alone, size_t *aloneAlloc, size_t *aloneLe
         if (jid->Children[i]->ChildrenCount <= 0) { // Alone
             if (*aloneLen + 1 >= *aloneAlloc) {
                 *aloneAlloc = *aloneAlloc * 2;
-                alone = (JID**)realloc(alone, sizeof(JID*) * *aloneAlloc);
+                alone = (JID**)realloc(alone, sizeof(JID*) * *aloneAlloc); // FIXME seg fault!! lol epic funi moment
                 assert(alone != NULL);
+                return;
             }
             alone[*aloneLen] = jid->Children[i];
             *aloneLen += 1;
@@ -73,23 +74,15 @@ static void renderRootRecursive(JID *rootJID, cairo_t *ctx) {
     }
 }
 
-// #define PROF
-// #include "../../prof.c"
+#define PROF
+// #include "src/prof.c"
 
 void renderRoot(JID *rootJID, cairo_t *ctx) {
-    // cairo_rectangle(ctx, 0, 0, 1920, 1080);
-    // cairo_set_source_rgb(ctx, 20 / 255.0,
-    //                             22 / 255.0,
-    //                             21 / 255.0);
-    // begin_clock("RenderRoot");
-        // write(1,"\E[H\E[2J",7);
-        // begin_clock("Update_Layouts");
-            updateLayouts(rootJID);
-        // end_clock();
-        // begin_clock("Draw_Root");
-            // cairo_fill(ctx);
-            renderRootRecursive(rootJID, ctx);
-    //     end_clock();
-    // end_clock();
-    // dump_summary(stdout);
+    cairo_rectangle(ctx, 0, 0, 1920, 1080);
+    cairo_set_source_rgb(ctx, 20 / 255.0,
+                                22 / 255.0,
+                                21 / 255.0);
+    updateLayouts(rootJID);
+    cairo_fill(ctx);
+    renderRootRecursive(rootJID, ctx);
 }

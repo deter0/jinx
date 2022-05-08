@@ -51,7 +51,7 @@ void app(JID *root) {
     JIDSetParent(button, root);
 
     JIDSetParent(JIDText(0, 0, "Nested layout test"), root);
-    JID *rect = JIDRectangle(0, 0, 100, 100);
+    JID *rect = JIDRectangle(0, 0, 100, 20);
     ((ComponentRectangleRenderer*)getComponentHard(rect, "ComponentRectangleRenderer", NULL))
         ->BorderRadius = 6;
     JIDSetBGColor(rect, (RGBA){
@@ -73,14 +73,14 @@ void app(JID *root) {
         // JID *button = JIDTextButton(0, 0, "+Button");
         JID *rect2 = JIDRectangle(0, 0, 0, 0);
         ComponentVBoxLayout *vlayout = componentVBoxLayout(5, (Padding){
-            .top = 5,
-            .left = 5,
-            .right = 5,
-            .bottom = 5
+            .top = 5.f,
+            .left = 5.f,
+            .right = 5.f,
+            .bottom = -150.f
         });
         // JIDSetParent(button, rect);
         JIDAddComp(rect2, (JIDComponent*)vlayout);
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             JID *button2 = JIDTextButton(0, 0, "Button LLOL!");
             JIDSetParent(button2, rect2);
         }
@@ -91,4 +91,6 @@ void app(JID *root) {
     // ((ComponentEventHandler*)getComponentHard(increaseSpacing, "ComponentEventHandler", NULL))->onClickUp = onMouseUp;
     JIDSetParent(increaseSpacing, rect);
     JIDSetParent(rect, root);
+    JID *slider = JIDSlider(0, 0, 240, 4);
+    JIDSetParent(slider, root);
 }

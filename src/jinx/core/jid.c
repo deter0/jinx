@@ -7,6 +7,7 @@
 #include "src/jinx/core/helpers.h"
 #include "src/jinx/eventHandler.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -54,6 +55,23 @@ ComponentTransform *componentTransform(float x, float y, float w, float h) {
     transform->height = h;
     transform->isLayout = false;
     return transform;
+}
+
+ComponentRelativeTransform *componentRelativeTransform(void) {
+    ComponentRelativeTransform *rt = (ComponentRelativeTransform*)
+                                        scalloc(sizeof(ComponentRelativeTransform));
+    rt->ComponentName = "ComponentRelativeTransform";
+    rt->isLayout = false;
+    rt->isRenderable = false;
+    rt->percentHeight = 0.0f;
+    rt->percentWidth = 0.0f;
+    rt->width = 0.0f;
+    rt->height = 0.0f;
+    rt->x = 0.0f;
+    rt->y = 0.0f;
+    rt->percentX = 0.0f;
+    rt->percentWidth = 0.0f;
+    return rt;
 }
 
 ComponentTextRenderer *componentTextRenderer(void) {
@@ -226,6 +244,94 @@ JID *JIDTextButton(float x, float y, char *text) {
     assert(JIDAddComp(rect, (JIDComponent*)ceh) != 1);
 
     return rect;
+}
+
+JID *currentDrag;
+static float startX;
+static bool dragging = false;
+static size_t sliderMouseMoveIndex = 0;
+static size_t sliderMouseUpIndex = 0;
+
+#define DRAGGER_SIZE 18.0f
+
+static void sliderMouseMove(EventHandler *eh, float x, float y) {
+    (void)y;
+    if (dragging) {
+        float delta = x - (float)startX;
+        ComponentRelativeTransform *rt = (ComponentRelativeTransform*)getComponentHard(currentDrag, "ComponentRelativeTransform", NULL);
+        assert(currentDrag->Parent != NULL);
+        ComponentTransform *parentTransform = (ComponentTransform*)getComponentHard(currentDrag->Parent, "ComponentTransform", NULL);
+
+        float realWidth = parentTransform->width - DRAGGER_SIZE;
+        rt->x = delta < 0 ? 0 : (delta > realWidth ? realWidth : delta);
+        eh->render(eh);
+    } else {
+        printf("Done!!\n");
+        eventHandlerDisconnectMouseMove(eh, sliderMouseMoveIndex);
+    }
+}
+
+static void sliderMouseUp(EventHandler *eh, float x, float y) {
+    (void)eh;
+    (void)x;
+    (void)y;
+    dragging = false;
+}
+
+static void sliderMouseDown(JID *self, float x, float y, EventHandler *eh) {
+    (void)y;
+    printf("Clicked!\n");
+    startX = x;
+    dragging = true;
+    currentDrag = self;
+    sliderMouseMoveIndex = eventHandlerConnectMouseMove(eh, sliderMouseMove);
+    sliderMouseUpIndex = eventHandlerConnectMouseUp(eh, sliderMouseUp);
+}
+
+JID *JIDSlider(float x, float y, float w, float h) {
+    JID *sliderRoot = JIDRectangle(x, y, w, h);
+    ComponentRectangleRenderer *rootRect =
+        (ComponentRectangleRenderer*)
+            getComponentHard(sliderRoot, "ComponentRectangleRenderer", NULL);
+    rootRect->BorderRadius = 0xffffff;
+    ComponentColor *color =
+        (ComponentColor*)
+            getComponentHard(sliderRoot, "ComponentColor", NULL);
+    color->background = (RGBA) {
+        .r = 126 / 255.0,
+        .g = 126 / 255.0,
+        .b = 126 / 255.0,
+        .a = 1.0
+    };
+
+    JID *dragPart = JIDRectangle(x, y, 12, 12);
+    ComponentRectangleRenderer *dragRect =
+        (ComponentRectangleRenderer*)
+            getComponentHard(dragPart, "ComponentRectangleRenderer", NULL);
+    dragRect->BorderRadius = 0xffffff;
+    ComponentRelativeTransform *rt = componentRelativeTransform();
+    rt->y = -(DRAGGER_SIZE / 3.0);
+    rt->x = 0.0f;
+    rt->height = DRAGGER_SIZE;
+    rt->width = DRAGGER_SIZE;
+    JIDAddComp(dragPart, (JIDComponent*)rt);
+
+    color = (ComponentColor*) getComponentHard(dragPart, "ComponentColor", NULL);
+    color->background = (RGBA){
+        .r = 120 / 255.0f,
+        .g = 75 / 255.0f,
+        .b = 236 / 255.0f,
+        .a = 1.0,
+    };
+
+    ComponentEventHandler *ceh = componentEventHandler();
+    ceh->onClick = sliderMouseDown;
+    
+    JIDAddComp(dragPart, (JIDComponent*) ceh);
+
+    JIDSetParent(dragPart, sliderRoot);
+
+    return sliderRoot;
 }
 
 int JIDAddComp(JID *jid, JIDComponent *comp) {
