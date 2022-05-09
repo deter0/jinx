@@ -187,8 +187,7 @@ void jinxst(char *jinxstSrc) {
                                     break;
                                 } else {
                                     set_error_cat("[JINXST]");
-                                    fprintf(stderr, "Unexpected token: <%s>`%s`\n\t%s", TOKEN_STRINGS[current->Type], get_value(current->ReadResult), debugInfo());
-                                    // debugInfo(); // ! TODO
+                                    fprintf(stderr, "Unexpected token: <%s>`%s`\n\t%s\n", TOKEN_STRINGS[current->Type], get_value(current->ReadResult), debugInfo());
                                     panic(true);
                                 }
                             }
@@ -198,13 +197,19 @@ void jinxst(char *jinxstSrc) {
                             printf("\tVariable: %s, Type: %s, Override: %d\n", variableName, type, override);
                             if (type != NULL) {
                                 if (!strcmp(type, "color")) {
-                                    
+                                    assert(false && "NOt implemented");
                                 } else {
                                     set_error_cat("[JINXST]");
                                     fprintf(stderr, "Unknown type variable(%s) type: `%s`\n", variableName, type);
                                     fprintf(stderr, "\t%s\n", debugInfo());
                                     panic(true);
                                 }
+                            } else if (override) {
+                                assert(false && "NOt implemented");
+                            } else {
+                                set_error_cat("[JINXST]");
+                                fprintf(stderr, "Not type for variable yet variable override not specified. %s\n", debugInfo());
+                                panic(true);
                             }
                             // free(variableName); 
                         }
