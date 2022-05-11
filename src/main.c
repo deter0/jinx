@@ -61,7 +61,7 @@ int main(void) {
     assert(false && "Not Implemented");
     exit(1);
 #endif
-#if 1
+#if 0
     char *defaultJinxstSrc = jinxSlurpFile("../defaults/default.jinxst");
     assert(defaultJinxstSrc != NULL);
     jinxst(defaultJinxstSrc);

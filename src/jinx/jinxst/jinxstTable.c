@@ -257,7 +257,8 @@ int main(int argc, char **argv) {
     assert(ht_search(ht, "dog") == NULL);
     assert(strcmp(ht_search(ht, "cat"), "charlie") == 0);
 
-    // ht_del_hash_table(ht);
+    ht_del_hash_table(ht);
+    ht = ht_new();
 
     for (int i = 1; i < argc; i++) {
         printf("> %s\n", argv[i]);
