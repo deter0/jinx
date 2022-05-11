@@ -19,7 +19,7 @@ static int is_prime(const size_t x) {
     if (x < 2) { return -1; }
     if (x < 4) { return 1; }
     if ((x % 2) == 0) { return 0; }
-    for (size_t i = 3; i <= floor(sqrt((double) x)); i += 2) {
+    for (size_t i = 3; (double)i <= floor(sqrt((double) x)); i += 2) {
         if ((x % i) == 0) {
             return 0;
         }
@@ -58,8 +58,8 @@ int ht_hash(const char* s, const size_t a, const size_t m) {
     long hash = 0;
     const size_t len_s = strlen(s);
     for (size_t i = 0; i < len_s; i++) {
-        hash += (long)pow(a, len_s - (i+1)) * s[i];
-        hash = hash % m;
+        hash += (long)pow((double)a, (double)(len_s - (i+1))) * s[i];
+        hash = hash % (long)m;
     }
     return (int)hash;
 }
@@ -122,9 +122,15 @@ static void ht_resize_down(ht_hash_table* ht) {
 }
 
 void ht_del_item(ht_item *item) {
-    free(item->key);
-    free(item->value);
-    free(item);
+    assert(item != NULL);
+    if (item != &HT_DELETED_ITEM) {
+        free(item->key);
+        free(item->value);
+        free(item);
+    } else {
+        // printf("Deleted element.\n");
+        // free(item);
+    }
 }
 
 void ht_del_hash_table(ht_hash_table* ht) {
@@ -153,7 +159,6 @@ void ht_insert(ht_hash_table *ht, const char *key, const char *value) {
     const size_t load = ht->count * 100 / ht->allocated;
     if (load > 70) {
         ht_resize_up(ht);
-        printf("Resized hash table (+), %zu\n", ht->allocated);
     }
     ht_item *item = ht_new_item(key, value);
     int index = ht_get_hash(item->key, ht->allocated, 0);
@@ -162,6 +167,7 @@ void ht_insert(ht_hash_table *ht, const char *key, const char *value) {
     while (cur_item != NULL) { // FXXMEEEE: could easily get exhausted
         if (cur_item != &HT_DELETED_ITEM) {
             if (strcmp(cur_item->key, key) == 0) {
+                printf("Delete in insert.\n");
                 ht_del_item(cur_item);
                 ht->items[index] = item;
                 return;
@@ -177,25 +183,35 @@ void ht_insert(ht_hash_table *ht, const char *key, const char *value) {
 
 char *ht_search(ht_hash_table *ht, const char *key) {
     int index = ht_get_hash(key, ht->allocated, 0);
+    assert((size_t)index < ht->allocated);
     ht_item *item = ht->items[index];
     size_t i = 1;
-    // while (item != NULL && item->key != NULL) {
-    //     if (strcmp(item->key, key) == 0 && item != &HT_DELETED_ITEM) {
-    //         return item->value;
-    //     }
-    //     index = ht_get_hash(key, ht->allocated, i);
-    //     item = ht->items[index];
-    //     i++;
-    //     assert(i <= ht->allocated);
-    // }
+    while (item != NULL && item->key != NULL) {
+        if (strcmp(item->key, key) == 0 && item != &HT_DELETED_ITEM) {
+            return item->value;
+        }
+        index = ht_get_hash(key, ht->allocated, i);
+        item = ht->items[index];
+        i++;
+        assert(i <= ht->allocated);
+    }
     return NULL;
+}
+
+void log_ht(ht_hash_table *ht, FILE *fd) {
+    fprintf(fd, "=== ht log ===\n");
+    for (size_t i = 0; i < ht->allocated; i++) {
+        if (ht->items[i] != NULL && ht->items[i] != &HT_DELETED_ITEM) {
+            fprintf(fd, "[\"%s\"] = \"%s\"\n", ht->items[i]->key, ht->items[i]->value);
+        }
+    }
+    fprintf(fd, "==============\n");
 }
 
 void ht_delete(ht_hash_table *ht, const char *key) {
     const size_t load = ht->count * 100 / ht->allocated;
     if (load < 10) {
         ht_resize_down(ht);
-        printf("Resized hash table (-) %zu\n", ht->allocated);
     }
     int index = ht_get_hash(key, ht->allocated, 0);
     ht_item *item = ht->items[index];
@@ -241,37 +257,46 @@ int main(int argc, char **argv) {
     assert(ht_search(ht, "dog") == NULL);
     assert(strcmp(ht_search(ht, "cat"), "charlie") == 0);
 
-    ht_del_hash_table(ht);
+    // ht_del_hash_table(ht);
 
     for (int i = 1; i < argc; i++) {
-        printf("%s\n", argv[i]);
-        /*switch (argv[i][0]) {
+        printf("> %s\n", argv[i]);
+        switch (argv[i][0]) {
             case '+': {
                 assert(i + 1 <= argc);
                 char *value = argv[i + 1];
                 ht_insert(ht, argv[i] + 1, value);
-                printf("Added ht[%s] = %s\n", argv[i] + 1, value);
+                // printf("Added ht[%s] = %s\n", argv[i] + 1, value);
+                i += 1;
             } break;
             case '-': {
                 ht_delete(ht, argv[i] + 1);
-                printf("Deleted ht[%s]\n", argv[i] + 1);
+                // printf("Deleted ht[%s]\n", argv[i] + 1);
             } break;
             case '=': {
                 assert(i + 1 <= argc);
                 char *value = argv[i + 1];
                 char *key = argv[i] + 1;
-                if (!strcmp(ht_search(ht, key), value)) {
-                    fprintf(stderr, "ht[%s] == %s Failed!, ht[%s] = %s", key, value, key, ht_search(ht, key));
-                } else {
-                    printf("Checked!\n");
+                char *searchRes = ht_search(ht, key);
+                if (searchRes == NULL) {
+                    fprintf(stderr, "!! ht[%s] == `%s` Failed!, ht[%s] = `%s`\n", key, value, key, searchRes);
+                    exit(1);
                 }
+                if (strcmp(value, searchRes) != 0) {
+                    fprintf(stderr, "!! ht[%s] == `%s` Failed!, ht[%s] = `%s`\n", key, value, key, searchRes);
+                    exit(1);
+                }
+                i += 1;
             } break;
             default: {
                 fprintf(stderr, "Unknown prefix: %c\n", argv[i][0]);
-                exit(1);
             }
-        }*/
+        }
     }
+
+    log_ht(ht, stderr);
+    ht_del_hash_table(ht);
+    printf("Done tests.\n");
 
     return 0;
 }

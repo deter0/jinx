@@ -11,5 +11,5 @@ def runCommandAndEcho(command: str) -> None:
 OUT="jinxstTable"
 
 runCommandAndEcho(f"clang -lm -gdbx -Wall -Weverything jinxstTable.c -o {OUT} {TEST_DEFINITIONS}")
-runCommandAndEcho(f"./{OUT} +greeting hello +goodbyes cya =goodbye cya")
+runCommandAndEcho(f"./{OUT} +greeting hello +goodbyes cya =goodbyes cya")
 # runCommandAndEcho(f"rm {OUT}")
