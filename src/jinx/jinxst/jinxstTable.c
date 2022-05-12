@@ -231,7 +231,7 @@ void ht_delete(ht_hash_table *ht, const char *key) {
     }
 }
 
-#if 1
+#ifdef TEST_JINXST_TABLE
 
 int main(int argc, char **argv) {
     (void)argc;

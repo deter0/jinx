@@ -5,8 +5,23 @@
 #include <stdbool.h>
 
 #include "reader.h"
+#include "src/jinx/jinxst/jinxst.h"
 #include "src/jinx/jinxst/log.h"
 #include "tokenizer.h"
+
+// Global Variables :scream:
+#define MAX_NAMESPACES 512
+Namespace namespaces[MAX_NAMESPACES] = {0};
+size_t namespaceCount = 0;
+
+static Namespace *getNamespace(char *nameSpaceName) {
+    for (size_t i = 0; i < namespaceCount; i++) {
+        if (strcmp(namespaces[i].NamespaceName, nameSpaceName) == 0) {
+            return &namespaces[i];
+        }
+    }
+    return NULL;
+}
 
 static size_t savedState = 0;
 static size_t i = 0; 
@@ -34,8 +49,6 @@ int findTokenOfType(TokenPool *pool, size_t from, TokenType type) {
     }
     return -1;
 }
-
-#define MAX_INHERITS 20
 
 struct lineStr {
     char *lineStr;
@@ -138,8 +151,29 @@ void jinxst(char *jinxstSrc) {
                     }
                     SAVE_TOKEN_STATE();
                     printf("Namespace `%s`, Inherits (%zu):\n", nameSpaceName, inheritCount);
+                    Namespace *ns = calloc(1, sizeof(Namespace));
+                    assert(ns != NULL);
+                    ns->NamespaceName = nameSpaceName;
+                    ns->Properties = ht_new();
+                    printf("Namespaces: %zu\n", namespaceCount);
+                    for (size_t j = 0; j < namespaceCount; j++) {
+                        printf("\t%s\n", namespaces[j].NamespaceName);
+                    }
                     for (size_t j = 0; j < inheritCount; j++) {
-                        printf("    > %s\n", inherits[j]);
+                        Namespace *inheriting = getNamespace(inherits[j]);
+                        if (inheriting == NULL) {
+                            set_error_cat("[JINXST]");
+                            fprintf(stderr, "Attempt to inherit a namespace that doesn't exist: `%s` | %s\n", inherits[j], debugInfo());
+                            panic(true);
+                        }
+                    }
+                    namespaces[namespaceCount] = *ns;
+                    namespaceCount++;
+                    printf("Added namespace: %s\n", ns->NamespaceName);
+                    if (namespaceCount >= MAX_NAMESPACES) {
+                        set_error_cat("[JINXST]");
+                        fprintf(stderr, "MAX NAMESPACES EXCEEDED: %s\n", debugInfo());
+                        panic(true);
                     }
                     assert(i == (size_t)scopeOpen);
                     NEXT_TOKEN();
@@ -197,7 +231,7 @@ void jinxst(char *jinxstSrc) {
                             printf("\tVariable: %s, Type: %s, Override: %d\n", variableName, type, override);
                             if (type != NULL) {
                                 if (!strcmp(type, "color")) {
-                                    assert(false && "NOt implemented");
+                                    // assert(false && "NOt implemented");
                                 } else {
                                     set_error_cat("[JINXST]");
                                     fprintf(stderr, "Unknown type variable(%s) type: `%s`\n", variableName, type);

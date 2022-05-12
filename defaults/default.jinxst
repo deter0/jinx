@@ -2,6 +2,6 @@ global {
     $background_color: color = #FFFFFF;
 }
 
-global_dark | global {
+global_dark {
     $background_color != #000000FF;
 }

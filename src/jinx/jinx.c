@@ -13,4 +13,5 @@
 #include "jinxst/jinxst.c"
 #include "jinxst/log.c"
 #include "jinxst/tokenizer.c"
+#include "jinxst/jinxstTable.c"
 // #include "core/tooltip.c"
