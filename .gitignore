@@ -2,3 +2,5 @@ build/
 .cache/
 tooltip.c
 tooltip.h
+jinxstTable
+.vscode/

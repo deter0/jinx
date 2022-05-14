@@ -61,11 +61,10 @@ int main(void) {
     assert(false && "Not Implemented");
     exit(1);
 #endif
-#if 0
+#if 1
     char *defaultJinxstSrc = jinxSlurpFile("../defaults/default.jinxst");
     assert(defaultJinxstSrc != NULL);
     jinxst(defaultJinxstSrc);
-    exit(0);
 #endif
     root = JIDRoot(800, 800); 
 

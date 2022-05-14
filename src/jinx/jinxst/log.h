@@ -10,12 +10,12 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-const char *TERM_RED();
-const char *TERM_UNDERLINE(); 
-const char *TERM_GREEN(); 
-const char *TERM_BLUE();
-const char *TERM_CYAN();
-const char *TERM_DEFAULT();
+inline const char *TERM_RED();
+inline const char *TERM_UNDERLINE(); 
+inline const char *TERM_GREEN(); 
+inline const char *TERM_BLUE();
+inline const char *TERM_CYAN();
+inline const char *TERM_DEFAULT();
 
 void apply_color(FILE *fs, char *color);
 void set_error_cat(char *cat);

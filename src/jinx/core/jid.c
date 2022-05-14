@@ -7,6 +7,9 @@
 #include "src/jinx/core/helpers.h"
 #include "src/jinx/eventHandler.h"
 
+#include "../jinxst/jinxst.h"
+#include "src/jinx/jinxst/jinxstTable.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -113,12 +116,25 @@ JID *JIDRoot(float width, float height) {
     assert(JIDAddComp(root, (JIDComponent*)color) != 1);
     ComponentRectangleRenderer *rectangleRenderer = componentRectangleRenderer();
     assert(JIDAddComp(root, (JIDComponent*)rectangleRenderer) != 1);
-    assert(JIDSetBGColor(root, (RGBA){
-        .r = 20 / 255.0,
-        .g = 22 / 255.0,
-        .b = 21 / 255.0,
-        .a = 1.0
-    }) != 1); // TODO: Unhardcode
+    
+
+    if (globalStyles != NULL) {
+        Variable *var = ht_search(globalStyles->Properties, "background_color");
+        if (var != NULL) {
+            assert(strcmp(var->type, "color") == 0);
+            assert(JIDSetBGColor(root, var->colorValue) != 1);
+        } else
+            goto applyDefaults;
+    } else {
+        applyDefaults:
+            fprintf(stderr, "globalStyles is null!\n");
+            assert(JIDSetBGColor(root, (RGBA){
+                .r = 20 / 255.0,
+                .g = 22 / 255.0,
+                .b = 21 / 255.0,
+                .a = 1.0
+            }) != 1);
+    }
 
     return root;
 }
@@ -166,6 +182,25 @@ JID *JIDText(float x, float y, char *text) {
         .b = 1.0,
         .a = 0.0
     }) != 1); // TODO: Unhardcode
+
+    if (globalStyles != NULL) {
+        Variable *var = ht_search(globalStyles->Properties, "text_color");
+        if (var != NULL) {
+            assert(strcmp(var->type, "color") == 0);
+            assert(JIDSetFGColor(rect, var->colorValue) != 1);
+        } else
+            goto applyDefaults;
+    } else {
+        applyDefaults:
+            fprintf(stderr, "globalStyles is null!\n");
+            assert(JIDSetBGColor(rect, (RGBA){
+                .r = 1.0,
+                .g = 1.0,
+                .b = 1.0,
+                .a = 1.0
+            }) != 1);
+    }
+
     return rect;
 }
 

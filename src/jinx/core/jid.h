@@ -1,5 +1,8 @@
 #pragma once
 #include "src/jinx/eventHandler.h"
+
+// #include "../jinxst/jinxst.h"
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <cairo/cairo.h>

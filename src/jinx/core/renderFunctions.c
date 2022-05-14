@@ -1,8 +1,10 @@
 #pragma once
 
-#include "src/jinx/core/jid.h"
-#include "src/jinx/core/renderer.h"
-#include "cairo/cairo.h"
+#include "./jid.h"
+#include "./renderer.h"
+#include "../jinxst/jinxst.h"
+
+#include <cairo/cairo.h>
 
 #include <math.h>
 #include <stdio.h>

@@ -85,6 +85,7 @@ size_t get_line(char *string, size_t index) {
 	return count;
 }
 
+// TODO: can we  somehow make this return a stack allocated strnig?
 // !! Be sure to free result
 char *get_value(read_result *read) {
 	char *buffer = (char *)malloc(sizeof(char) * (read->length + 1));

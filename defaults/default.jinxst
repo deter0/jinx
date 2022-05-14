@@ -1,7 +1,5 @@
 global {
-    $background_color: color = #FFFFFF;
+    $background_color: color = #141615;
+    $text_color: color = #FFFFFF;
 }
 
-global_dark | global {
-    $background_color != #000000FF;
-}
