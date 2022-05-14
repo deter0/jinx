@@ -6,3 +6,5 @@
 #
 # Jinx
 GUI Toolkit.
+
+![image](https://user-images.githubusercontent.com/82973108/168434030-599cedac-0ec7-41a3-8693-3e3eed7a023b.png)
