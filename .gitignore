@@ -3,3 +3,4 @@ build/
 tooltip.c
 tooltip.h
 jinxstTable
+.vscode/

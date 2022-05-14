@@ -80,8 +80,8 @@ static void renderRootRecursive(JID *rootJID, cairo_t *ctx) {
 void renderRoot(JID *rootJID, cairo_t *ctx) {
     cairo_rectangle(ctx, 0, 0, 1920, 1080);
     cairo_set_source_rgb(ctx, 20 / 255.0,
-                                22 / 255.0,
-                                21 / 255.0);
+                              22 / 255.0,
+                              21 / 255.0);
     updateLayouts(rootJID);
     cairo_fill(ctx);
     renderRootRecursive(rootJID, ctx);
