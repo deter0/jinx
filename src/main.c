@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -38,12 +39,12 @@ static void keyPress(EventHandler *eh, unsigned int keyCode) {
 static JID *root;
 static cairo_t *ctx;
 
-static void render(EventHandler *eh) {
+static void render(EventHandler *eh, bool force) {
     (void)eh;
     ComponentTransform *tf = (ComponentTransform*)getComponentHard(root, "ComponentTransform", NULL);
     tf->width = eh->x11Window->attributes->width;
     tf->height = eh->x11Window->attributes->height;
-    renderRoot(root, ctx);
+    renderRoot(root, ctx, force);
 }
 
 static void mouseMove(EventHandler *eh, float x, float y) {
@@ -85,7 +86,9 @@ int main(void) {
     eh.click = forwardClick;
 
     app(root);
-    renderRoot(root, ctx);
+
+    renderRoot(root, ctx, true);
+    updateLayouts(root);
     updateLayouts(root);
 
     eventHandlerStart(&eh);

@@ -114,8 +114,8 @@ char *trim(char *s) {
 char *getDebugInfo(Token *current, TokenPool *pool) {
 	size_t index = (size_t)current->ReadResult->ptr_start - (size_t)pool->src;
     size_t line = get_line(pool->src, index);
-    char *out = malloc(50);
-    sprintf(out, "**Line %zu**, could not produce more debug data sorry :(", line);
+    char *out = malloc(75);
+    sprintf(out, "**Line %zu **, could not produce more debug data sorry :(", line);
     return out;
 }
 

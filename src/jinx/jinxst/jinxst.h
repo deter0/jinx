@@ -17,3 +17,4 @@ size_t namespaceCount = 0;
 Namespace *getNamespace(char *nameSpaceName);
 
 Namespace *globalStyles = NULL;
+RGBA *jinxstGetColor(const char *namespace, const char *key);

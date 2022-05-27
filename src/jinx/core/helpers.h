@@ -21,3 +21,8 @@ int JIDSetFGColor(JID *jid, RGBA new);
     * @return - Returns 1 if no ComponentTextRenderer was found, 0 for success
 */
 int JIDSetText(JID *jid, char *text);
+
+ComponentTransform *GetTransform(JID *jid);
+int SetSize(JID *jid, float width, float height);
+int SetPosition(JID *jid, float x, float y);
+int Damage(JID *jid);

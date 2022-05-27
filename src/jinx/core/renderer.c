@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "src/jinx/core/helpers.h"
 #include "src/jinx/core/jid.h"
 
 static void findAlone(JID *jid, JID **alone, size_t *aloneAlloc, size_t *aloneLen) {
@@ -58,31 +59,65 @@ static void updateLayouts(JID *rootJID) {
     }
 }
 
-static void renderRootRecursive(JID *rootJID, cairo_t *ctx) {
-    for (size_t i = 0; i < rootJID->ComponentCount; i++) {
-        if (rootJID->Components[i]->isRenderable) {
-            ComponentRenderable *rend = (ComponentRenderable*)rootJID->Components[i];
-            if (rend->render != NULL) {
-                rend->render(rootJID, ctx);
-            } else {
-                fprintf(stderr, "Renderable component, `%s`, render function is NULL.\n", rootJID->Components[i]->ComponentName);
+static void damageRootRecursive(JID *rootJID, cairo_t *ctx, bool force) {
+    ComponentRenderDamage *damage = (ComponentRenderDamage*)getComponentHard(rootJID, "ComponentRenderDamage", "renderRootRecursive");
+    bool renderChildren = false;
+    if (damage->IsDamaged || force == true) {
+        for (size_t i = 0; i < rootJID->ComponentCount; i++) {
+            if (rootJID->Components[i]->isRenderable) {
+                ComponentRenderable *rend = (ComponentRenderable*)rootJID->Components[i];
+                if (rend->render != NULL) {
+                    ComponentTransform *tf = GetTransform(rootJID);
+                    cairo_rectangle(ctx, tf->x, tf->y, tf->width, tf->height);
+                    cairo_set_source_rgba(ctx, 1.0, 1.0, 1.0, 1.0);
+                    cairo_fill(ctx);
+                } else {
+                    fprintf(stderr, "Renderable component, `%s`, render function is NULL.\n", rootJID->Components[i]->ComponentName);
+                }
             }
         }
+        damage->IsDamaged = true;
+        renderChildren = true;
     }
     for (size_t i = 0; i < rootJID->ChildrenCount; i++) {
-        renderRootRecursive(rootJID->Children[i], ctx);
+        damageRootRecursive(rootJID->Children[i], ctx, renderChildren);
+    }
+}
+
+static void renderRootRecursive(JID *rootJID, cairo_t *ctx, bool force) {
+    ComponentRenderDamage *damage = (ComponentRenderDamage*)getComponentHard(rootJID, "ComponentRenderDamage", "renderRootRecursive");
+    bool renderChildren = false;
+    if (damage->IsDamaged || force == true || true) {
+        for (size_t i = 0; i < rootJID->ComponentCount; i++) {
+            if (rootJID->Components[i]->isRenderable) {
+                ComponentRenderable *rend = (ComponentRenderable*)rootJID->Components[i];
+                if (rend->render != NULL) {
+                    rend->render(rootJID, ctx);
+                } else {
+                    fprintf(stderr, "Renderable component, `%s`, render function is NULL.\n", rootJID->Components[i]->ComponentName);
+                }
+            }
+        }
+        damage->IsDamaged = false;
+        renderChildren = true;
+    }
+    for (size_t i = 0; i < rootJID->ChildrenCount; i++) {
+        renderRootRecursive(rootJID->Children[i], ctx, renderChildren);
     }
 }
 
 #define PROF
 // #include "src/prof.c"
 
-void renderRoot(JID *rootJID, cairo_t *ctx) {
+void renderRoot(JID *rootJID, cairo_t *ctx, bool force) {
+    assert(rootJID != NULL);
     cairo_rectangle(ctx, 0, 0, 1920, 1080);
-    cairo_set_source_rgb(ctx, 20 / 255.0,
+    cairo_set_source_rgba(ctx, 20 / 255.0,
                               22 / 255.0,
-                              21 / 255.0);
+                              21 / 255.0,
+                              0.5);
     updateLayouts(rootJID);
-    cairo_fill(ctx);
-    renderRootRecursive(rootJID, ctx);
+    // cairo_fill(ctx);
+    damageRootRecursive(rootJID, ctx, force);
+    renderRootRecursive(rootJID, ctx, force);
 }

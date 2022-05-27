@@ -110,7 +110,7 @@ void eventHandlerStart(EventHandler *eh) {
                         XGetWindowAttributes(window.display,
                             window.window,
                             window.attributes);
-                        eh->render(eh);
+                        eh->render(eh, true);
                     }
                     break;
                 case MotionNotify:

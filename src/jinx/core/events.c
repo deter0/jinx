@@ -47,7 +47,7 @@ void JIDOnMouseClick(JID *root, float x, float y, EventHandler *eh) {
         if (ceh != NULL) {
             if (ceh->onClick != NULL) {
                 ceh->onClick(target, x, y, eh);
-                eh->render(eh);
+                eh->render(eh, false);
             }
         }
     }

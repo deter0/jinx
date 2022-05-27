@@ -78,7 +78,7 @@ static HashTable* ht_new_sized(const size_t base_size) {
     return ht;
 }
 
-#define HT_INITIAL_BASE_SIZE 53
+#define HT_INITIAL_BASE_SIZE 200
 static HashTableItem HASH_TABLE_DELETED_ITEM = {NULL, NULL};
 
 HashTable* ht_new(void) {
@@ -159,8 +159,8 @@ static int ht_get_hash(
 }
 
 void ht_insert(HashTable *ht, const char *key, Variable *var) {
-    const size_t load = ht->count * 100 / ht->allocated;
-    if (load > 70) {
+    const float load = ht->count / (float)ht->allocated;
+    if (load > 0.5f) {
         ht_resize_up(ht);
     }
     HashTableItem *item = ht_new_item(key, var);

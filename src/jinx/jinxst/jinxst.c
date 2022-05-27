@@ -317,3 +317,25 @@ void jinxst(char *jinxstSrc) {
 
     globalStyles = getNamespace("global");
 }
+
+RGBA *jinxstGetColor(const char *namespace, const char *key) {
+    Namespace *specified = getNamespace((char *)namespace);
+    if (specified == NULL) {
+        set_error_cat("[JIXNST]");
+        fprintf(stderr, "Missing namespace `%s` in your jinxst file(s).\n", namespace);
+        panic(true);
+    }
+    Variable *var = ht_search(specified->Properties, key);
+    if (var == NULL) {
+        set_error_cat("[JIXNST]");
+        fprintf(stderr, "Missing property `%s` of type `color` in namespace: `%s`.\n", key, namespace);
+        panic(true);
+    }
+    if (strcmp(var->type, "color") == 0) {
+        return &var->colorValue;
+    } else {
+        set_error_cat("[JIXNST]");
+        fprintf(stderr, "Property `%s` in namespace `%s` was expected to be type color.\n", key, namespace);
+        panic(true);
+    }
+}

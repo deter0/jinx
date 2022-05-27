@@ -50,6 +50,8 @@ void componentHBoxLayoutCompute(JID *self) {
                                  "ComponentHBoxLayout", "componentHBoxLayoutCompute");
     ComponentTransform *selfTransform = (ComponentTransform*)getComponentSoft(self,
                                  "ComponentTransform", "componentHBoxLayoutCompute");
+    ComponentTransform *selfRTTransform = (ComponentRelativeTransform*)getComponentSoft(self,
+                                            "ComponentRelativeTransform", NULL);
     size_t lastX;
     size_t greatestY = 0;
     if (selfTransform) {
@@ -60,7 +62,19 @@ void componentHBoxLayoutCompute(JID *self) {
     for (size_t i = 0; i < self->ChildrenCount; i++) {
         ComponentTransform *childTransform
             = (ComponentTransform*)getComponentSoft(self->Children[i], "ComponentTransform", "componentVBoxLayoutCompute");
-        if (childTransform != NULL) {
+        ComponentRelativeTransform *childRTTransform
+            = (ComponentRelativeTransform*)getComponentSoft(self->Children[i],
+                                            "ComponentRelativeTransform", NULL);
+        if (childRTTransform != NULL) {
+            childRTTransform->x = lastX;
+            if (selfTransform != NULL) {
+                childRTTransform->y = selfTransform->y + layout->Padding.top;
+            }
+            lastX = childTransform->x + childTransform->width + layout->Spacing;
+            if (childTransform->y + childTransform->height > greatestY) {
+                greatestY = childTransform->y + childTransform->height;
+            }
+        } else if (childTransform != NULL) {
             childTransform->x = lastX;
             if (selfTransform != NULL) {
                 childTransform->y = selfTransform->y + layout->Padding.top;
@@ -73,7 +87,12 @@ void componentHBoxLayoutCompute(JID *self) {
     }
     // lastX += layout->Padding.right;
     lastX -= layout->Spacing;
-    if (selfTransform) {
+    if (selfRTTransform) {
+        if (!layout->NoAutoSizeY)
+            selfRTTransform->width = lastX;
+        if (!layout->NoAutoSizeX)
+            selfRTTransform->height = greatestY - selfTransform->y + layout->Padding.bottom;
+    } else if (selfTransform) {
         if (!layout->NoAutoSizeY)
             selfTransform->width = lastX;
         if (!layout->NoAutoSizeX)

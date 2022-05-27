@@ -1,6 +1,7 @@
 #pragma once
 
 #include "x11.h"
+#include <stdbool.h>
 
 #define MAX_CONNECTIONS 15
 
@@ -9,7 +10,7 @@ typedef struct EventHandler {
     X11Window *x11Window;
     void *userData;
     void (*keyPress)(struct EventHandler *eh, unsigned int keyCode);
-    void (*render)(struct EventHandler *eh);
+    void (*render)(struct EventHandler *eh, bool force);
     void (*quit)(struct EventHandler *eh);
     void (*update)(struct EventHandler *eh, double dt);
     void (*click)(struct EventHandler *eh, float x, float y);

@@ -114,7 +114,7 @@ void renderTextRenderer(JID *jid, cairo_t *ctx) {
     cairo_move_to(ctx,
         transform->x + tren->Padding.left * 0.5,
         transform->y + + tren->Padding.top * 0.5 + tren->FontSize);
-    cairo_select_font_face(ctx, "Noto Sans UI",
+    cairo_select_font_face(ctx, tren->Font,
       CAIRO_FONT_SLANT_NORMAL,
       CAIRO_FONT_WEIGHT_NORMAL);
     cairo_text_extents_t exts = {0};

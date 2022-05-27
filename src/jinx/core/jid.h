@@ -19,8 +19,11 @@ typedef struct JID {
     size_t ChildrenCount;
     size_t ChildrenAlloc;
 
+    const char *ID;
+
     struct JID *Parent;
 } JID;
+JID *EmptyJID(const char *JIDType);
 
 #define ExtendJIDComponent     char *ComponentName; \
                                bool isLayout; \
@@ -115,7 +118,7 @@ typedef struct ComponentRenderDamage {
     ExtendJIDComponent;
     bool IsDamaged;
 } ComponentRenderDamage;
-ComponentRenderDamage componentRenderDamage(void);
+ComponentRenderDamage *componentRenderDamage(void);
 void ComponentTextRendererFree(ComponentTextRenderer *tr);
 
 /**
@@ -198,8 +201,9 @@ JIDComponent *getComponentSoft(JID *jid, const char *target, const char *from);
 // Root Component
 JID *JIDRoot(float width, float height);
 JID *JIDRectangle(float x, float y, float width, float height);
-JID *JIDText(float x, float y, char *text);
+JID *JIDText(float x, float y, const char *text);
 JID *JIDTextButton(float x, float y, char *text);
 JID *JIDSlider(float x, float y, float w, float h);
 
-void JIDDestroy(JID *jid);
+void DestroyComponent(JIDComponent *component);
+void JIDDestroy(JID **jid);

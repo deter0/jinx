@@ -81,7 +81,8 @@ ComponentTextRenderer *componentTextRenderer(void) {
     ComponentTextRenderer *rndr = (ComponentTextRenderer*)scalloc(sizeof(ComponentTextRenderer));
     rndr->ComponentName = "ComponentTextRenderer";
     rndr->FontSize = 24;
-    rndr->Text = "";
+    rndr->Text = strdup("");
+    rndr->Font = "Noto Sans UI";
     rndr->render = renderTextRenderer;
     rndr->isRenderable = true;
     rndr->isLayout = false;
@@ -101,17 +102,37 @@ bool JIDTypeEq(JID *jid, const char *expect) {
     return !strcmp(jid->JIDType, expect);
 }
 
+#define ID_SIZE 64
+static const char *ID() {
+    char *id = scalloc(ID_SIZE);
+    for (size_t i = 0; i < 64; i++) {
+        id[i] = (char)((rand() % 89) + 48);
+    }
+    return (const char*)id;
+}
+
+JID *EmptyJID(const char *JIDType) {
+    JID *jid = scalloc(sizeof(JID));
+    jid->Children = NULL;
+    jid->ChildrenCount = 0;
+    jid->ChildrenAlloc = 0;
+    jid->ComponentCount = 0;
+    jid->JIDType = strdup(JIDType);
+    jid->ID = ID();
+
+    ComponentTransform *transform = componentTransform(0, 0, 0, 0);
+    assert(JIDAddComp(jid, (JIDComponent*)transform) != 1);
+    
+    ComponentRenderDamage *damage = componentRenderDamage();
+    assert(JIDAddComp(jid, (JIDComponent*)damage) != 1);
+
+    return jid;
+}
+
 JID *JIDRoot(float width, float height) {
-    JID *root = scalloc(sizeof(JID));
+    JID *root = EmptyJID("Root");
 
-    root->JIDType ="Root";
-    root->Children = NULL;
-    root->ChildrenCount = 0;
-    root->ChildrenAlloc = 0;
-    root->ComponentCount = 0;
-
-    ComponentTransform *transform = componentTransform(0, 0, width, height);
-    assert(JIDAddComp(root, (JIDComponent*)transform) != 1);
+    assert(SetSize(root, width, height) != 1);
     ComponentColor *color = componentColorBG(1.0, 1.0, 1.0, 0.0);
     assert(JIDAddComp(root, (JIDComponent*)color) != 1);
     ComponentRectangleRenderer *rectangleRenderer = componentRectangleRenderer();
@@ -140,16 +161,11 @@ JID *JIDRoot(float width, float height) {
 }
 
 JID *JIDRectangle(float x, float y, float width, float height) {
-    JID *rect = scalloc(sizeof(JID));
+    JID *rect = EmptyJID("Rectangle");
 
-    rect->JIDType ="Rectangle";
-    rect->Children = NULL;
-    rect->ChildrenCount = 0;
-    rect->ChildrenAlloc = 0;
-    rect->ComponentCount = 0;
+    SetPosition(rect, x, y);
+    SetSize(rect, width, height);
 
-    ComponentTransform *transform = componentTransform(x, y, width, height);
-    assert(JIDAddComp(rect, (JIDComponent*)transform) != 1);
     ComponentColor *color = componentColorBG(1.0, 1.0, 1.0, 1.0);
     assert(JIDAddComp(rect, (JIDComponent*)color) != 1);
     ComponentRectangleRenderer *rectangleRenderer = componentRectangleRenderer();
@@ -158,22 +174,16 @@ JID *JIDRectangle(float x, float y, float width, float height) {
     return rect;
 }
 
-JID *JIDText(float x, float y, char *text) {
-    JID *rect = scalloc(sizeof(JID));
-
-    rect->JIDType ="Text";
-    rect->Children = NULL;
-    rect->ChildrenCount = 0;
-    rect->ChildrenAlloc = 0;
-    rect->ComponentCount = 0;
+JID *JIDText(float x, float y, const char *text) {
+    JID *rect = EmptyJID("Text");
 
     const int fontSize = 24;
-    ComponentTransform *transform = componentTransform(x, y, strlen(text) * fontSize, fontSize);
-    assert(JIDAddComp(rect, (JIDComponent*)transform) != 1);
+    SetSize(rect, strlen(text) * fontSize, fontSize); // Approx. width
+    SetPosition(rect, x, y);
     ComponentColor *color = componentColorFG(1.0, 1.0, 1.0, 1.0);
     assert(JIDAddComp(rect, (JIDComponent*)color) != 1);
     ComponentTextRenderer *textRenderer = componentTextRenderer();
-    textRenderer->Text = text;
+    textRenderer->Text = strdup(text);
     textRenderer->FontSize = fontSize;
     assert(JIDAddComp(rect, (JIDComponent*)textRenderer) != 1);
     assert(JIDSetBGColor(rect, (RGBA){
@@ -224,7 +234,7 @@ void defaultMouseEnter(JID *self, float x, float y, EventHandler *eh) {
         .b = 240 / 255.0,
         .a = 1.0
     });
-    eh->render(eh);
+    eh->render(eh, false);
 }
 void defaultMouseLeave(JID *self, float x, float y, EventHandler *eh) {
     (void)x;
@@ -235,25 +245,19 @@ void defaultMouseLeave(JID *self, float x, float y, EventHandler *eh) {
         .b = 236 / 255.0,
         .a = 1.0
     });
-    eh->render(eh);
+    eh->render(eh, false);
 }
 
 JID *JIDTextButton(float x, float y, char *text) {
-    JID *rect = scalloc(sizeof(JID));
-
-    rect->JIDType = "TextButton";
-    rect->Children = NULL;
-    rect->ChildrenCount = 0;
-    rect->ChildrenAlloc = 0;
-    rect->ComponentCount = 0;
+    JID *rect = EmptyJID("TextButton");
 
     const int fontSize = 20;
-    ComponentTransform *transform = componentTransform(x, y, strlen(text) * fontSize, fontSize);
-    assert(JIDAddComp(rect, (JIDComponent*)transform) != 1);
+    SetPosition(rect, x, y);
+    SetSize(rect, strlen(text) * fontSize, fontSize); // Approx. width
     ComponentColor *color = componentColorFG(1.0, 1.0, 1.0, 1.0);
     assert(JIDAddComp(rect, (JIDComponent*)color) != 1);
     ComponentTextRenderer *textRenderer = componentTextRenderer();
-    textRenderer->Text = text;
+    textRenderer->Text = strdup(text);
     textRenderer->FontSize = fontSize;
     textRenderer->Padding = (Padding){
         .top = 12,
@@ -301,7 +305,8 @@ static void sliderMouseMove(EventHandler *eh, float x, float y) {
         float realWidth = parentTransform->width - DRAGGER_SIZE;
         rt->x = initalX + delta;
         rt->x = (rt->x < 0 ? 0 : (rt->x > realWidth ? realWidth : rt->x));
-        eh->render(eh);
+        Damage(currentDrag->Parent);
+        eh->render(eh, false);
     } else {
         printf("Done!!\n");
         eventHandlerDisconnectMouseMove(eh, sliderMouseMoveIndex);
@@ -330,6 +335,7 @@ static void sliderMouseDown(JID *self, float x, float y, EventHandler *eh) {
 
 JID *JIDSlider(float x, float y, float w, float h) {
     JID *sliderRoot = JIDRectangle(x, y, w, h);
+    sliderRoot->JIDType = strdup("Slider");
     ComponentRectangleRenderer *rootRect =
         (ComponentRectangleRenderer*)
             getComponentHard(sliderRoot, "ComponentRectangleRenderer", NULL);
@@ -470,11 +476,11 @@ ComponentRectangleRenderer *componentRectangleRenderer(void) {
     renderer->isHovering = false;
     return renderer;
 }
-ComponentRenderDamage componentRenderDamage(void) {
-    return (ComponentRenderDamage){
-        .ComponentName = "ComponentRenderDamage",
-        .IsDamaged = true
-    };
+ComponentRenderDamage *componentRenderDamage(void) {
+    ComponentRenderDamage *damage = scalloc(sizeof(ComponentRenderDamage));
+    damage->ComponentName = "ComponentRenderDamage";
+    damage->IsDamaged = true;
+    return damage;
 }
 
 int JIDSetParent(JID *jid, JID *parent) {
@@ -501,46 +507,58 @@ bool ComponentNameEq(JIDComponent *comp, const char *expect) {
 
 // Deleting
 
-void ComponentColorFree(ComponentColor *color) {
-    assert(ComponentNameEq((JIDComponent*)color, "ComponentColor"));
-
-    // free(color->foreground);
-    // free(color->background);
-    // free((char*)color->ComponentName);
-    free(color);
-}
-
 void ComponentTextRendererFree(ComponentTextRenderer *tr) {
     assert(ComponentNameEq((JIDComponent*)tr, "ComponentTextRenderer"));
-    // free(tr->Text);
-    // free((char*)tr->ComponentName);
-    free(tr);
+    free(tr->Text);
 }
 
-void JIDDestroy(JID *jid) {
+void DestroyComponent(JIDComponent *component) {
+    if (ComponentNameEq(component, "ComponentTextRenderer")) {
+        ComponentTextRendererFree((ComponentTextRenderer*)component);
+    }
+    free(component);
+}
+
+void JIDDestroy(JID **jidO) {
+    JID *jid = *jidO;
     if (jid == NULL) {
-        fprintf(stderr, "Attempt to free a NULL jid");
+        fprintf(stderr, "Attempt to destroy a NULL jid");
         exit(1);
     }
-    // for (size_t i = 0; i < jid->ChildrenCount; i++) {
-    //     JIDDestroy(jid->Children[i]);
-    // }
+    for (size_t i = 0; i < jid->ChildrenCount; i++) {
+        JIDDestroy(&jid->Children[i]);
+    }
+    
     for (size_t i = 0; i < jid->ComponentCount; i++) {
-        if (0){//ComponentNameEq(jid->Components[i], "ComponentColor")) {
-        //     ComponentColorFree((ComponentColor*)jid->Components[i]);
-        // } else if (ComponentNameEq(jid->Components[i], "ComponentTextRenderer")) {
-        //     ComponentTextRendererFree((ComponentTextRenderer*)jid->Components[i]);
+        if (jid->Components[i] != NULL) {
+            DestroyComponent(jid->Components[i]);
         } else {
-            // free(jid->Components[i]->ComponentName);
-            free(jid->Components[i]);
+            assert(false && "???");
         }
     }
-    // free(jid->Components);
-    // free((char*)jid->JIDType);
+    free(jid->JIDType);
+
     free(jid->Children);
     if (jid->Parent != NULL) {
-        jid->Parent->ChildrenCount--;
+        int selfIndex = -1;
+        for (size_t i = 0; i < jid->Parent->ChildrenCount; i++) {
+            if (strcmp(jid->Parent->Children[i]->ID, jid->ID) == 0) {
+                selfIndex = i;
+                break;
+            }
+        }
+        if (selfIndex != -1) {
+            for (size_t i = selfIndex; i < jid->Parent->ChildrenCount; i++) {
+                if (i + 1 < jid->Parent->ChildrenCount) {
+                    jid->Parent->Children[i] = jid->Parent->Children[i + 1];
+                }
+            }
+            jid->Parent->ChildrenCount--;
+        } else {
+            assert(false && "???");
+        }
     }
-    jid->Parent = NULL;
     free(jid);
+    jid = NULL;
+    jidO = &jid;
 }
