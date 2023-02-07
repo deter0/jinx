@@ -9,6 +9,6 @@ m_dep = cc.find_library('m', required : false)
 
 executable(
     'jinx',
-    'src/main.c',
+    ['src/main.c', 'src/jinx/jinxst/log.c'],
     dependencies : [Xext_dep, cairo_dep, xlib_dep, m_dep]
 )

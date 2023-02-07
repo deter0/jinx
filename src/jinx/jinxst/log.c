@@ -40,32 +40,32 @@ void l_assert(int condition, char *context) {
     }
 }
 
-inline const char *TERM_RED() {
+const char *TERM_RED() {
         if (!isatty(1)) 
                 return "";
         return "\033[0;31m";
 }
-inline const char *TERM_UNDERLINE() {
+const char *TERM_UNDERLINE() {
         if (!isatty(1))
                 return "";
         return "\033[4m";
 }
-inline const char *TERM_GREEN() {
+const char *TERM_GREEN() {
         if (!isatty(1))
                 return "";
         return "\033[0;32m";
 }
-inline const char *TERM_BLUE() {
+const char *TERM_BLUE() {
         if (!isatty(1))
                 return "";
         return "\033[0;34m";
 }
-inline const char *TERM_CYAN() {
+const char *TERM_CYAN() {
         if (!isatty(1))
                 return "";
         return "\033[0;36m";
 }
-inline const char *TERM_DEFAULT() {
+const char *TERM_DEFAULT() {
         if (!isatty(1))
                 return "";
         return "\033[0m";

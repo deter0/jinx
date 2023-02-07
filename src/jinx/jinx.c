@@ -11,7 +11,7 @@
 #include "core/events.c"
 #include "jinxst/reader.c"
 #include "jinxst/jinxst.c"
-#include "jinxst/log.c"
+// #include "jinxst/log.c"
 #include "jinxst/tokenizer.c"
 #include "jinxst/jinxstTable.c"
 // #include "core/tooltip.c"
